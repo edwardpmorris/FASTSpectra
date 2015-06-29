@@ -1,0 +1,12 @@
+Package: FASTSpectra
+Title: Parse Ocean Optics spectra files
+Version: 0.1.0
+Authors@R: person("Edward P.", "Morris", email ="edward.morris@uca.es", role = c("aut", "cre"))
+Description: FASTSpectra allows you to parse multiple Ocean Optics spectra and include the instrument generated metadata. So far only "text with header" format is supported.
+Depends: R (>= 3.1.0)
+License: GPL-2
+LazyData: true
+Imports:
+    hyperSpec (>= 0.98-20150),
+    yaml (>= 2.1.13)
+    
