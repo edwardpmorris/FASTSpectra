@@ -20,6 +20,6 @@ Parse Ocean Optics SpectraSuite "text with header"
 }
 \examples{
 setwd("~/Desktop/FASTSpectra") # DELETE ME
-out <- scan.txt.SpectraSuite(files="data/*.txt")
+out <- scan.txt.SpectraSuite(files="data_for_tst/*.txt")
 }
 
