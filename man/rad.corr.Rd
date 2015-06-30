@@ -4,10 +4,11 @@
 \alias{rad.corr}
 \title{Radiometric correction}
 \usage{
-rad.corr(dn, cal.DN2RadiantFlux, is.REF = FALSE, cal.RRefPanel, coll.area)
+rad.corr(dn, cal.DN2RadiantFlux, is.REF = FALSE, cal.RRefPanel, coll.area,
+  int.time)
 }
 \arguments{
-\item{dn}{A \pckg{hyperSpec} object that includes a matrix of hyperspectral digital number values [counts] and a dataframe that includes the integration time of each spectrum}
+\item{dn}{A \pkg{hyperSpec} object that includes a matrix of hyperspectral digital number values [counts] and a dataframe that includes the 'integration time' of each spectrum}
 
 \item{cal.DN2RadiantFlux}{Path to a file that contains the instrument specific calibration for conversion from counts to radiance [uJ/count]}
 
@@ -15,7 +16,9 @@ rad.corr(dn, cal.DN2RadiantFlux, is.REF = FALSE, cal.RRefPanel, coll.area)
 
 \item{cal.RRefPanel}{Path to a file that contains the reference panel specific calibration of reflectance [-]}
 
-\item{coll.area}{Surface area of the instrument [cm2]}
+\item{coll.area}{Surface area of the instrument [m2]}
+
+\item{int.time}{Integration time of spectral measurement [s]}
 }
 \value{
 A hyperSpec object including a matrix of spectra, metadata extracted from the spectra headers and file information
@@ -24,7 +27,7 @@ A hyperSpec object including a matrix of spectra, metadata extracted from the sp
 Convert instrument values, digital number (DN) counts, to radiometric units using instrument specific metadata and calibration values (instrument response functions).
 }
 \details{
-Radiometry terminology and units from https://en.wikipedia.org/wiki/Template:SI_radiometry_units. Various unit conversions can be applied: normalised DN per wavelength (counts/s), radient flux (W), radiance (W/sr m2), irradiance (W/m2). These only make sense if the 'integration time' of a measurement is known, the 'surface area of the instrument light apature' m, 'measurement geometry' and 'instrument-specific response function' in radiant flux or irradiance units (W/count) is known.
+Radiometry terminology and units from \url{https://en.wikipedia.org/wiki/Template:SI_radiometry_units}. Various unit conversions can be applied: normalised DN per wavelength (counts/s), radiant flux (W), radiance (W/sr m2), irradiance (W/m2). These only make sense if the 'measurement geometry', 'integration time' (s) of a measurement, 'surface area of the instrument light apature' (m), and 'instrument-specific response function' in radiant flux or irradiance units (e.g., J/count) is known and supplied to the function.
 }
 \examples{
 setwd("~/Desktop/FASTSpectra") # DELETE ME
