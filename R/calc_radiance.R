@@ -16,7 +16,7 @@
 #' dn <- scan.txt.SpectraSuite(files="data_for_tst/*.txt")
 #' rad <- rad.corr(dn, is.REF=FALSE, cal.DN2RadiantFlux = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
 #' plot(rad)
-#' ref <- rad.corr(dn, is.REF=TRUE, cal.DN2RadiantFlux = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
+#' ref <- rad.corr(dn, is.REF=TRUE, cal.DN2Irradiance = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
 #' plot(rad/ref)
 #' @export
 rad.corr <- function (dn, type=c("DN.s", "RadFlux", "Radiance", "Irradiance", "IrradRefPanel"), coll.area, int.time=NULL, cal.DN2Irradiance=NULL, cal.DN2RadiantFlux=NULL, cal.RRefPanel=NULL) {
@@ -52,7 +52,7 @@ rad.corr <- function (dn, type=c("DN.s", "RadFlux", "Radiance", "Irradiance", "I
     mat <- rad@data$spc
     # convert to W (uJ per s) per m2 per nm
     for( i in 1:dim(mat)[1]){
-      mat[i, ] <- (mat[i, ]*cal.DN2Irradiance)/coll.area
+      mat[i, ] <- (mat[i, ]*cal.DN2Irradiance@data$spc[1,])/coll.area
     }
     rad@data$spc <- mat
     rad@label$spc <- expression(paste0(E_lambda, " (W~", s_-1,~nm_-1, ")"))
