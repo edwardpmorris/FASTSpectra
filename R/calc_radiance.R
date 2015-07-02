@@ -55,8 +55,8 @@ rad.corr <- function (dn, type=c("DN.s", "RadFlux", "Radiance", "Irradiance", "I
       mat[i, ] <- (mat[i, ]*cal.DN2Irradiance@data$spc[1,])/coll.area
     }
     rad@data$spc <- mat
-    rad@label$spc <- expression(paste0(E_lambda, " (W~", s_-1,~nm_-1, ")"))
-    
+    rad@label$spc <- expression(E_lambda ~ (W ~ m_-2 ~ nm_-1 ))
+     
   }else{stop("coll-area not found, please supply the instrument optical collection area [m2]")}
     
   
