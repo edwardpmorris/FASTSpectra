@@ -98,6 +98,7 @@ out@data$file <- as.character(out@data$file)
   # fix some names
   nam <- names(out@data)
   nam[5] <- "Integration.Time.usec"
+  nam[8] <- "Fibre.um"
   names(out@data) <- nam
   
 #   out@data$Integration.Time.usec <- as.numeric(

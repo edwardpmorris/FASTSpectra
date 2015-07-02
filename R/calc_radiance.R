@@ -14,7 +14,8 @@
 #' @examples
 #' setwd("~/Desktop/FASTSpectra") # DELETE ME
 #' dn <- scan.txt.SpectraSuite(files="data_for_tst/*.txt")
-#' rad <- rad.corr(dn, is.REF=FALSE, cal.DN2RadiantFlux = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
+#' rad <- rad.corr(dn, type="DN.s", cal.DN2Irradiance = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
+#' #' rad <- rad.corr(dn, type="Irradiance", cal.DN2Irradiance = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
 #' plot(rad)
 #' ref <- rad.corr(dn, is.REF=TRUE, cal.DN2Irradiance = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
 #' plot(rad/ref)
@@ -27,7 +28,7 @@ rad.corr <- function (dn, type=c("DN.s", "RadFlux", "Radiance", "Irradiance", "I
     int.time.usec <- dn@data[, "Integration.Time.usec"] # u seconds
     int.time.usec <- int.time.usec/10^6 # seconds
     
-    # get wavelength spread
+    # get wavelength spread IS THIS FWHM?
     dL <- diff(dn@wavelength, lag=1, differences = 1)/2
     dL <- c(dL[1],dL) # make same length as wavelength
     
@@ -47,40 +48,40 @@ rad.corr <- function (dn, type=c("DN.s", "RadFlux", "Radiance", "Irradiance", "I
       cal.DN2Irradiance <- 
         import.calibration(files = cal.DN2Irradiance
                            , label = list (spc = "C_irrad (uJ/count)"))
+      # to allow for different wavelengths
+      cal.DN2Irrad <- approxfun(cal.DN2Irradiance@wavelength
+                                , cal.DN2Irradiance@data$spc[,1])
     } else {stop("cal.DN2Irradiance not found, please supply path to the instrument-specific calibration file for conversion to irradiance")}
-  if(!is.null(coll.area)){
+  
+    # try and calculate coll.area from calibration file
+    if(is.null(coll.area)){
+      if(!is.null(cal.DN2Irradiance@data$Fibre.um)){
+        d <- cal.DN2Irradiance@data$Fibre.um
+        d <- d/10^6 # m
+        coll.area <- pi * (d/2) ^2 # m2
+      }else{stop("coll-area not found, please supply the instrument optical collection area [m2]")}
+      }
+    
+    # select spectra matrix
     mat <- rad@data$spc
     # convert to W (uJ per s) per m2 per nm
     for( i in 1:dim(mat)[1]){
-      mat[i, ] <- (mat[i, ]*cal.DN2Irradiance@data$spc[1,])/coll.area
+      mat[i, ] <- (mat[i, ]*cal.DN2Irrad(rad@wavelength))/coll.area
     }
     rad@data$spc <- mat
     rad@label$spc <- expression(E_lambda ~ (W ~ m_-2 ~ nm_-1 ))
-     
-  }else{stop("coll-area not found, please supply the instrument optical collection area [m2]")}
-    
-  
+  }
 
-    
-  
-  cal.DN2RadiantFlux <- read.delim(cal.DN2RadiantFlux, as.is=T, skip=9, header = F)
-  names(cal.DN2RadiantFlux) <- c("wavelength", "uJ.count")
-  cal.DN2RadiantFlux <- approxfun(cal.DN2RadiantFlux$wavelength, cal.DN2RadiantFlux$uJ.count)
-  
-    
-  # convert to radiance [uJ/nm]
-  rad <- apply(rad, MARGIN = 1, FUN = function(x) {x * cal.DN2RadiantFlux(rad@wavelength)}
-    )
   
   # reference panel CHECK IRRAD?
-  if(is.REF==TRUE){
-    if (!is.null(cal.RRefPanel)){
-      cal.RRefPanel <- read.delim(cal.RRefPanel, as.is=T, skip=0, header = F)
-      names(cal.RRefPanel) <- c("wavelength", "reflectance")
-      cal.RRefPanel <- approxfun(cal.RRefPanel$wavelength, cal.RRefPanel$reflectance)
-      rad <- apply(rad, MARGIN = 1, FUN = function(x) x / cal.RRefPanel(rad@wavelength))
-    }
-  }
-  rad@label$spc <- expression(italic(L), " (", mu, J, s^-1,")" )
+#   if(is.REF==TRUE){
+#     if (!is.null(cal.RRefPanel)){
+#       cal.RRefPanel <- read.delim(cal.RRefPanel, as.is=T, skip=0, header = F)
+#       names(cal.RRefPanel) <- c("wavelength", "reflectance")
+#       cal.RRefPanel <- approxfun(cal.RRefPanel$wavelength, cal.RRefPanel$reflectance)
+#       rad <- apply(rad, MARGIN = 1, FUN = function(x) x / cal.RRefPanel(rad@wavelength))
+#     }
+#   }
+#   rad@label$spc <- expression(italic(L), " (", mu, J, s^-1,")" )
   return(rad)
 }
