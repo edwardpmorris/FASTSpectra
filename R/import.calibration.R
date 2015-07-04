@@ -1,8 +1,11 @@
-#' Import an instrument or reference panel's calibration data
-
+#'@title Import an instrument or reference panel's calibration data
+#' 
+#'@description Given a path to folder that contains a file with instrument or reference panel specific calibration data this function imports the data into a \pckge{hyperSpec} object ready for use in radiometric correction
+#'
+#'@details At present an Ocean Optics format calibration file is expected e.g.,  '*.Irrad'. This has a 7 line header (YAML) and tab-delimited columns of 'wavelength' and    
 #'
 #' @param files A specific file path or list of file paths. Default is select all text files in working directory \code{"*.IrradCal"}
-#' @param label A list of form \code{list(parameter=expression(parameter))}. Default is to label the parameter as "C_irrad (uJ/count)"
+#' @param label A list of form \code{list(parameter=expression(parameter))}. Default is to label the parameter as "C_Q_e_ (uJ count^-1^)"
 #' @param type One of \code{c("irradiance", "radiance", "ref_panel")}. Default is irradiance.
 #' @return A hyperSpec object including a matrix of spectra, metadata extracted from the spectra headers and file information
 #' @examples
@@ -21,7 +24,7 @@ import.calibration <- function (
   files <- Sys.glob(files)
   
   # check and return empty object if no files found
-  requireNamespace(hyperSpec) #FIXME WORK OUT HOW TO CALL S4 METHODS IN A PACKAGE
+  requireNamespace("hyperSpec") #FIXME WORK OUT HOW TO CALL S4 METHODS IN A PACKAGE
   if (length (files) == 0){
     warning ("No calibration files found.")
     return (new ("hyperSpec"))
@@ -35,17 +38,17 @@ import.calibration <- function (
   # extract metadata
   #require(yaml)
   header <- yaml::yaml.load(
-    paste(readLines(files [1], n=7), collapse ="\n")
+    paste(readLines(files [1], n=8), collapse ="\n")
     )
   
   # extract spectral data
-  buffer <- matrix (scan (files [1], skip=9, nlines=2048), ncol = 2, byrow = T)
-  tst <- read.delim(files[1], skip=9, nrows=2048, header = F)
+  buffer <- matrix (scan (files [1], skip=10, nlines=2048), ncol = 2, byrow = T)
   
-  plot(tst$V1, 1/tst$V2*10^8, type="l"
+  # delete: checking cal file
+  #tst <- read.delim(files[1], skip=9, nrows=2048, header = F)
+  #plot(tst$V1, 1/tst$V2*10^8, type="l"
        #, ylim=c(0,1)
-       , xlim=c(400,800))
-  
+  #     , xlim=c(400,800))
   
   # first column gives the wavelength vector
   wavelength <- buffer[, 1]

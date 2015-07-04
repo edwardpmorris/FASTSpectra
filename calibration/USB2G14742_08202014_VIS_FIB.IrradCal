@@ -5,6 +5,7 @@ Int. Time (usec):	71364
 Average:	50
 Boxcar:	5
 Fiber (micron):	400
+Units: [uJoule/count]
 
 wavelength  [uJoule/count]
 339.47	0.00000000E0
