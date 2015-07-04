@@ -11,7 +11,7 @@
 #' @export
 import.calibration <- function (
   files = "*.IrradCal"
-  , label = list (spc = "C_irrad (uJ/count)")
+  , label = list (spc = expression(paste( C [ Q [ e ] ] , " (" , mu, J, ~count^-1, ")")))
   ) 
   
 {
@@ -21,7 +21,7 @@ import.calibration <- function (
   files <- Sys.glob(files)
   
   # check and return empty object if no files found
-  require(hyperSpec) #FIXME WORK OUT HOW TO CALL S4 METHODS IN A PACKAGE
+  requireNamespace(hyperSpec) #FIXME WORK OUT HOW TO CALL S4 METHODS IN A PACKAGE
   if (length (files) == 0){
     warning ("No calibration files found.")
     return (new ("hyperSpec"))
@@ -39,7 +39,13 @@ import.calibration <- function (
     )
   
   # extract spectral data
-  buffer <- matrix (scan (files [1], skip=9, nlines=2048), ncol = 2, byrow = TRUE)
+  buffer <- matrix (scan (files [1], skip=9, nlines=2048), ncol = 2, byrow = T)
+  tst <- read.delim(files[1], skip=9, nrows=2048, header = F)
+  
+  plot(tst$V1, 1/tst$V2*10^8, type="l"
+       #, ylim=c(0,1)
+       , xlim=c(400,800))
+  
   
   # first column gives the wavelength vector
   wavelength <- buffer[, 1]

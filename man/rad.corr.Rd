@@ -4,37 +4,42 @@
 \alias{rad.corr}
 \title{Radiometric correction}
 \usage{
-rad.corr(dn, cal.DN2RadiantFlux, is.REF = FALSE, cal.RRefPanel, coll.area,
-  int.time)
+rad.corr(dn, type = c("DN.s", "RadFlux", "Radiance", "Irradiance",
+  "IrradRefPanel"), coll.area, int.time = NULL, cal.DN2RadiantEnergy = NULL,
+  cal.RefPanel = NULL)
 }
 \arguments{
 \item{dn}{A \pkg{hyperSpec} object that includes a matrix of hyperspectral digital number values [counts] and a dataframe that includes the 'integration time' of each spectrum}
 
-\item{cal.DN2RadiantFlux}{Path to a file that contains the instrument specific calibration for conversion from counts to radiance [uJ/count]}
+\item{type}{The type of conversion to be calculated. See details}
 
-\item{is.REF}{Logical, default is FALSE, if TRUE \code{cal.RRefPanel} must be supplied and radiance is returned relative to a 'lambertian' surface with a reflectance factor of 1 throughout the wavelength range of interest}
+\item{coll.area}{Surface area of the instruments optical collection apparatus [m2]}
 
-\item{cal.RRefPanel}{Path to a file that contains the reference panel specific calibration of reflectance [-]}
+\item{int.time}{Integration time of spectral measurement [s]. Default is NULL, in which case the times are derived from the hyperSpec object. FIXME uses OO-SS specific header, make more flexible}
 
-\item{coll.area}{Surface area of the instrument [m2]}
+\item{cal.DN2RadiantEnergy}{Path to a file that contains the instrument specific calibration for conversion from counts to radiant energy  [uJ/count]}
 
-\item{int.time}{Integration time of spectral measurement [s]}
+\item{cal.RefPanel}{Path to a file that contains the reference panel specific calibration of reflectance [-]}
 }
 \value{
-A hyperSpec object including a matrix of spectra, metadata extracted from the spectra headers and file information
+A hyperSpec object including a matrix of radiometrically corrected spectra, metadata extracted from the spectra headers and file information
 }
 \description{
-Convert instrument values, digital number (DN) counts, to radiometric units using instrument specific metadata and calibration values (instrument response functions).
+Convert instrument values, called digital number (DN) counts, to radiometric units using instrument specific metadata and calibration values (instrument response functions).
 }
 \details{
-Radiometry terminology and units from \url{https://en.wikipedia.org/wiki/Template:SI_radiometry_units}. Various unit conversions can be applied: normalised DN per wavelength (counts/s), radiant flux (W), radiance (W/sr m2), irradiance (W/m2). These only make sense if the 'measurement geometry', 'integration time' (s) of a measurement, 'surface area of the instrument light apature' (m), and 'instrument-specific response function' in radiant flux or irradiance units (e.g., J/count) is known and supplied to the function.
+Radiometry terminology and units from \url{https://en.wikipedia.org/wiki/Template:SI_radiometry_units}.
+Various unit conversions can be applied: Options include time normalised DN per wavelength [counts/s nm], spectral radiant flux [W/nm], spectral radiance [W/sr m2 nm], spectral irradiance [W/m2 nm] and spectral irradiance of a reference panel relative to a 'lambertian' surface with a reflectance factor of 1 throughout the wavelength range of interest [W/m2 nm].
+These only make sense if the 'measurement geometry', 'integration time' [s] of a measurement, 'surface area of the instrument light apature' [m], and 'instrument-specific response function' in radiant flux or irradiance units (e.g., J/count) is known and supplied to the function.
+Reference panel-specific reflectance over the wavelngth range of the measurement to be converted must be supplied to for reference panel values.
 }
 \examples{
 setwd("~/Desktop/FASTSpectra") # DELETE ME
 dn <- scan.txt.SpectraSuite(files="data_for_tst/*.txt")
-rad <- rad.corr(dn, is.REF=FALSE, cal.DN2RadiantFlux = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
+rad <- rad.corr(dn, type="DN.s", cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
+#' rad <- rad.corr(dn, type="Irradiance", cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
 plot(rad)
-ref <- rad.corr(dn, is.REF=TRUE, cal.DN2RadiantFlux = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
+ref <- rad.corr(dn, is.REF=TRUE, cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
 plot(rad/ref)
 }
 
