@@ -24,7 +24,7 @@
 #' rad <- rad.corr(dn, type="DN.s")
 #' plot(rad)
 #' rad <- rad.corr(dn, type="Irradiance", cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal")
-#' plot(rad*100*100, wl.range=390:850)
+#' plot(rad, wl.range=390:850)
 #' ref <- rad.corr(dn, is.REF=TRUE, cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
 #' plot(rad/ref)
 #' @export
@@ -72,12 +72,20 @@ rad.corr <- function (dn, type=c("DN.s", "RadFlux", "Radiance", "Irradiance", "I
     # select spectra matrix
     mat <- rad@data$spc
     s.angle <- cal.DN2RadiantEnergy@data$Solid.angle.collector.steradians
+    
+    # get wavelength spread IS THIS FWHM?
+    dL <- diff(rad@wavelength, lag=1, differences = 1)/2 # nm
+    dL <- c(dL[1],dL) # make same length as wavelength
+    
     # convert to uW (uJ per s) per cm2 per nm
     for( i in 1:dim(mat)[1]){
-      mat[i, ] <- (mat[i, ]*cal.DN2RE(rad@wavelength))*s.angle
+      # integrations time
+      int.time <- rad@data$Integration.Time.usec[i]/10^6 # seconds
+      mat[i, ] <- ((mat[i, ]*cal.DN2RE(rad@wavelength))*s.angle)/(int.time * dL)
     }
+    # mat <- (mat/10^6)*(100*100) # W / m2 nm
     rad@data$spc <- mat
-    rad@label$spc <- expression(paste(italic( E [ e  *lambda ] ), " (", mu, "W ", cm^{-2}, ~ nm^{-1}, ")"))
+    rad@label$spc <- expression(paste(italic( E [ e  *lambda ] ), " (", "W ", m^{-2}, ~ nm^{-1}, ")"))
   }
 
   
