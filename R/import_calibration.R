@@ -10,7 +10,7 @@
 #' @return A hyperSpec object including a matrix of spectra, metadata extracted from the spectra headers and file information
 #' @examples
 #' setwd("~/Desktop/FASTSpectra") # DELETE ME
-#' cal.irrad <- import.calibration(type=="uJ/count", files="calibration/*.IrradCal")
+#' cal.irrad <- import.calibration(type="uJ/count", files="calibration/*.IrradCal")
 #' plot(cal.irrad, wl.range=400:850)
 #' cal.ref <- import.calibration(type="R_ref_panel", files="calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
 #' plot(cal.ref, wl.range=400:850)
@@ -46,13 +46,11 @@ import.calibration <- function (files = "*.IrradCal"
     ## read the first file
     # extract metadata
     #require(yaml)
-    header <- yaml::yaml.load(paste(readLines(files [1], n = 3), collapse =
-                                      "\n"))
+    header <- yaml::yaml.load(paste(readLines(files [1], n = 3), collapse ="\n"))
     
     # FIXME change cal file to yaml(xml) structure
     # extract spectral data
-    buffer <-
-      matrix (scan (files [1], skip = 5, nlines = 2050), ncol = 2, byrow = T)
+    buffer <- matrix (scan (files [1], skip = 5, nlines = 2050), ncol = 2, byrow = T)
     
     # first column gives the wavelength vector
     wavelength <- buffer[, 1]
@@ -69,8 +67,7 @@ import.calibration <- function (files = "*.IrradCal"
     spc [1,] <- buffer[, 2]
     
     # add the file info to header metadata
-    data <-
-      data.frame (file = basename(files), stringsAsFactors = F)
+    data <- data.frame (file = basename(files), stringsAsFactors = F)
     data <- cbind(data, meta)
     
     ## make the hyperSpec object
@@ -104,13 +101,11 @@ import.calibration <- function (files = "*.IrradCal"
     ## read the first file
     # extract metadata
     #require(yaml)
-    header <- yaml::yaml.load(paste(readLines(files [1], n = 9), collapse =
-                                      "\n"))
+    header <- yaml::yaml.load(paste(readLines(files [1], n = 9), collapse ="\n"))
     
     # FIXME change cal file to yaml(xml) structure
     # extract spectral data
-    buffer <-
-      matrix (scan (files [1], skip = 11, nlines = 2048), ncol = 2, byrow = T)
+    buffer <- matrix (scan (files [1], skip = 11, nlines = 2048), ncol = 2, byrow = T)
     
     # first column gives the wavelength vector
     wavelength <- buffer[, 1]
@@ -167,8 +162,9 @@ import.calibration <- function (files = "*.IrradCal"
     
     # create spectra for conversion to diff units
     # solid angle
+    # see http://users.ox.ac.uk/~atdgroup/referencematerial/Notes%20on%20optical%20fibres%20and%20fibre%20bundles.pdf
     theta <- (pi * out@data$Acceptance.angle.degrees) / 180 # radians
-    s.angle <- 2 * pi * (1 - cos(theta)) # steradians
+    s.angle <- pi * (sin(theta))^2 # steradians
     out@data$Solid.angle.collector.steradians <- s.angle
     # integrations time
     int.time <- out@data$Integration.Time.usec / 10 ^ 6 # seconds
@@ -177,7 +173,7 @@ import.calibration <- function (files = "*.IrradCal"
     dL <- c(dL[1],dL) # make same length as wavelength
     # collection area
     d <- out@data$Fiber.um # um
-    d <- d / 10 ^ 6 # m
+    d <- d / 10^6 # m
     coll.area <- pi * (d / 2) ^ 2 # m2
     
     # calculate

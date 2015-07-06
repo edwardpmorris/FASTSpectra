@@ -44,7 +44,7 @@ rad.corr <- function (dn, type=c("DN.snm", "spectral.radiance", "spectral.irradi
     rad <- dn
     mat <- dn@data$spc
     for( i in 1:dim(mat)[1]){
-      mat[i, ] <- (mat[i, ]/int.time.usec[i])/dL
+      mat[i, ] <- mat[i, ]/(int.time.usec[i]*dL)
     }
     rad@data$spc <- mat # counts/s nm
     rad@label$spc <- expression(paste("DN (counts ", ~s^{-1}, ~nm^{-1}, ")"))
@@ -55,13 +55,11 @@ rad.corr <- function (dn, type=c("DN.snm", "spectral.radiance", "spectral.irradi
         cal.DN2RadiantEnergy <- 
           import.calibration(files = cal.DN2RadiantEnergy, type="uJ/count")
         # to allow for different wavelengths
-        cal.DN2RE <- approxfun(cal.DN2RadiantEnergy@wavelength
-                               , cal.DN2RadiantEnergy@data$spc[1,])
+        cal.DN2RE <- approxfun(cal.DN2RadiantEnergy@wavelength, cal.DN2RadiantEnergy@data$spc[1,])
       } else {stop("cal.DN2RadiantEnergy not found, please supply path to the instrument-specific calibration file for conversion to irradiance")}
       
       # select spectra matrix
       mat <- rad@data$spc
-      #s.angle <- cal.DN2RadiantEnergy@data$Solid.angle.collector.steradians
       
       # get wavelength spread IS THIS FWHM?
       dL <- diff(rad@wavelength, lag=1, differences = 1)/2 # nm
@@ -71,9 +69,8 @@ rad.corr <- function (dn, type=c("DN.snm", "spectral.radiance", "spectral.irradi
       for( i in 1:dim(mat)[1]){
         # integrations time
         int.time <- rad@data$Integration.Time.usec[i]/10^6 # seconds
-        mat[i, ] <- ((mat[i, ]*cal.DN2RE(rad@wavelength)))/(int.time * dL) # W per sr per s per m2 per nm
+        mat[i, ] <- (mat[i, ]*cal.DN2RE(rad@wavelength))/(int.time * dL) # W per sr per s per m2 per nm
       }
-      #mat <- (mat/10^6)*(100*100) # W / sr m2 nm
       rad@data$spc <- mat
       rad@label$spc <- expression(paste(italic( L [ list(e,lambda) ] ), " (", "W ", sr^{-1}, ~m^{-2}, ~ nm^{-1}, ")"))
     }
@@ -84,8 +81,7 @@ rad.corr <- function (dn, type=c("DN.snm", "spectral.radiance", "spectral.irradi
       cal.DN2RadiantEnergy <- 
         import.calibration(files = cal.DN2RadiantEnergy, type="uJ/count")
       # to allow for different wavelengths
-      cal.DN2RE <- approxfun(cal.DN2RadiantEnergy@wavelength
-                                , cal.DN2RadiantEnergy@data$spc[1,])
+      cal.DN2RE <- approxfun(cal.DN2RadiantEnergy@wavelength, cal.DN2RadiantEnergy@data$spc[1,])
     } else {stop("cal.DN2RadiantEnergy not found, please supply path to the instrument-specific calibration file for conversion to irradiance")}
   
     # select spectra matrix
@@ -95,16 +91,14 @@ rad.corr <- function (dn, type=c("DN.snm", "spectral.radiance", "spectral.irradi
     # get wavelength spread IS THIS FWHM?
     dL <- diff(rad@wavelength, lag=1, differences = 1)/2 # nm
     dL <- c(dL[1],dL) # make same length as wavelength
-    
     # convert to W (J per s) per m2 per nm
     for( i in 1:dim(mat)[1]){
       # integrations time
       int.time <- rad@data$Integration.Time.usec[i]/10^6 # seconds
-      mat[i, ] <- ((mat[i, ]*cal.DN2RE(rad@wavelength))*s.angle)/(int.time * dL) # J per s (W) per cm2 per nm
+      mat[i, ] <- (mat[i, ]*cal.DN2RE(rad@wavelength)*s.angle)/(int.time * dL) # J per s (W) per m2 per nm
     }
-    #mat <- (mat/10^6)*(100*100) # W / m2 nm
     rad@data$spc <- mat
-    rad@label$spc <- expression(paste(italic( E [ e  *lambda ] ), " (", "W ", m^{-2}, ~ nm^{-1}, ")"))
+    rad@label$spc <- expression(paste(italic( E [ list(e,lambda) ] ), " (", "W ", m^{-2}, ~ nm^{-1}, ")"))
   }
 
   
@@ -113,9 +107,7 @@ rad.corr <- function (dn, type=c("DN.snm", "spectral.radiance", "spectral.irradi
     if (!is.null(cal.RRefPanel)){
       cal.RRefPanel <- import.calibration(type="R_ref_panel", files=cal.RRefPanel)
       cal.RRP <- approxfun(cal.RRefPanel@wavelength, cal.RRefPanel@data$spc[1,])
-      #mat <- rad@data$spc
       rad <- hyperSpec::apply(rad, MARGIN = 1, FUN = function(x) x / cal.RRP(rad@wavelength))
-      #rad@data$spc <- mat 
     }else{stop("cal.RRefPanel not found, please supply path to reference panel calibration")}
   }
 
