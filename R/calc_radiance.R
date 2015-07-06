@@ -59,7 +59,7 @@ rad.corr <- function (dn, type=c("DN.snm", "spectral.radiance", "spectral.irradi
       } else {stop("cal.DN2RadiantEnergy not found, please supply path to the instrument-specific calibration file for conversion to irradiance")}
       
       # select spectra matrix
-      mat <- rad@data$spc
+      mat <- rad@data$spc #TESTING
       
       # get wavelength spread IS THIS FWHM?
       dL <- diff(rad@wavelength, lag=1, differences = 1)/2 # nm
@@ -85,7 +85,7 @@ rad.corr <- function (dn, type=c("DN.snm", "spectral.radiance", "spectral.irradi
     } else {stop("cal.DN2RadiantEnergy not found, please supply path to the instrument-specific calibration file for conversion to irradiance")}
   
     # select spectra matrix
-    mat <- rad@data$spc
+    mat <- rad@data$spc #TESTING
     s.angle <- cal.DN2RadiantEnergy@data$Solid.angle.collector.steradians
     
     # get wavelength spread IS THIS FWHM?
