@@ -4,24 +4,29 @@
 \alias{import.calibration}
 \title{Import an instrument or reference panel's calibration data}
 \usage{
-import.calibration(files = "*.IrradCal", label = list(spc =
-  "C_irrad (uJ/count)"))
+import.calibration(files = "*.IrradCal", type, label = NULL)
 }
 \arguments{
 \item{files}{A specific file path or list of file paths. Default is select all text files in working directory \code{"*.IrradCal"}}
 
-\item{label}{A list of form \code{list(parameter=expression(parameter))}. Default is to label the parameter as "C_irrad (uJ/count)"}
+\item{type}{One of \code{c("uJ/count", "R_ref_panel")}.}
 
-\item{type}{One of \code{c("irradiance", "radiance", "ref_panel")}. Default is irradiance.}
+\item{label}{A list of form \code{list(parameter=expression(parameter))}. Default is to label the parameter as "C_Q_e_ (uJ count^-1^)"}
 }
 \value{
 A hyperSpec object including a matrix of spectra, metadata extracted from the spectra headers and file information
 }
 \description{
-Import an instrument or reference panel's calibration data
+Given a path to folder that contains a file with instrument or reference panel specific calibration data this function imports the data into a \pckge{hyperSpec} object ready for use in radiometric correction
+}
+\details{
+At present an Ocean Optics format calibration file is expected e.g.,  '*.Irrad'. This has a 7 line header (YAML) and tab-delimited columns of 'wavelength' and
 }
 \examples{
 setwd("~/Desktop/FASTSpectra") # DELETE ME
-out <- import.calibration(files="calibration/*.IrradCal")
+cal.irrad <- import.calibration(type=="uJ/count", files="calibration/*.IrradCal")
+plot(cal.irrad, wl.range=400:850)
+cal.ref <- import.calibration(type="R_ref_panel", files="calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
+plot(cal.ref, wl.range=400:850)
 }
 

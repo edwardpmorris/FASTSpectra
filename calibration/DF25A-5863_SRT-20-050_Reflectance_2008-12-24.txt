@@ -1,3 +1,8 @@
+Date:	2008-12-24 12:00:00 GMT
+Reference panel:	DF25A-5863_SRT-20-050
+Units: 1
+
+wavelength R_lambda
 250	0.210
 251	0.209
 252	0.209

@@ -1,0 +1,41 @@
+#'@title Calculate reflectance spectra using a logfile to assign reference-sample pairs
+#' 
+#'@description Given a log file with columns sample identification, path to reference and sample measurements [id, R, S] and \pckge{hyperSpec} objects that represent reference and sample spectra, this function divides samples by references using the specified pairs
+#'
+#'@details The format of the logfile must be followed (.CSV). FIXME make more flexible    
+#'
+#' @param reference A \pckge{hyperSpec} object with radiometrically corrected 'reference' spectra
+#' @param sample A \pckge{hyperSpec} object with radiometrically corrected 'sample' spectra
+#' @param logfile Path to the corresponding logfile for the object
+#' @return A hyperSpec object of 'reflectance' spectra
+#' @examples
+#' # load custom package
+#' library(FASTSpectra)
+#' # parse spectra into hyperSpec object
+#' dn <- scan.txt.SpectraSuite(files="data_for_tst/*.txt")
+#' # assign measurement id and type using fieldlog file
+#' dn <- assign.type(dn, logfile="data_for_tst/fieldlog.csv")
+#' # split into sample and reference
+
+#' # convert samples to radiance
+#' rad <- rad.corr(dn$SAMP, type="spectral.radiance", cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal")
+#' plot(rad, wl.range=380:850)
+#' # convert references to irradiance relative to 100% reference panel [W / m2 nm]
+#' ref <- rad.corr(dn$REF, type="spectral.irradiance", is.REF=TRUE, cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
+#' plot(ref, wl.range=380:850)
+#' SHR <- calc.reflectance(reference=ref, sample=rad, logfile="data_for_tst/fieldlog.csv")
+#' plot(SHR, wl.range=380:850)
+#' @export
+calc.reflectance <-  function(reference, sample, logfile="fieldlog.csv"){
+  
+  # parse logfile
+  logfile <- read.csv(logfile, as.is = T)
+  
+  # convert to spectral hemispherical conical reflectance
+  SHR <- rad
+  SHR@label$spc <- expression(R [ list(Omega, lambda) ] )
+  for (i in 1:nrow(logfile)){
+    SHR[[match(logfile$S[i], sample@data$file)]] <- sample[[match(logfile$S[i], sample@data$file)]] / ref[[match(logfile$R[i], reference@data$file)]]
+  }
+  return(SHR)
+}
