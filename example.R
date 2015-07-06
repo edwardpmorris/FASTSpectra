@@ -22,7 +22,7 @@ plot(SHR, wl.range=380:850)
 # group into quartiles (5,16,50,84,95 %) and plot
 SHR.quant <- aggregate( SHR, SHR@data$id, quantile, probs = c(0.05,0.16,0.5,0.84,0.95), na.rm=T)
 plot(SHR.quant
-     , col=matlab.dark.palette(length(unique(SHR.means@data$.aggregate)))
+     , col=matlab.dark.palette(length(unique(SHR.quant@data$.aggregate)))
      , wl.range=380:850
      #,stacked=".aggregate"
      )

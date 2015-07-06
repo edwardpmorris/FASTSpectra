@@ -163,11 +163,11 @@ import.calibration <- function (files = "*.IrradCal"
     # create spectra for conversion to diff units
     # solid angle
     # see http://users.ox.ac.uk/~atdgroup/referencematerial/Notes%20on%20optical%20fibres%20and%20fibre%20bundles.pdf
-    theta <- (pi * out@data$Acceptance.angle.degrees) / 180 # radians
+    theta <- out@data$Acceptance.angle.degrees*(pi/ 180) # radians
     s.angle <- pi * (sin(theta))^2 # steradians
     out@data$Solid.angle.collector.steradians <- s.angle
     # integrations time
-    int.time <- out@data$Integration.Time.usec / 10 ^ 6 # seconds
+    int.time <- out@data$Integration.Time.usec / 10^6 # seconds
     # get wavelength spread IS THIS FWHM?
     dL <- diff(out@wavelength, lag = 1, differences = 1) / 2 # nm
     dL <- c(dL[1],dL) # make same length as wavelength
