@@ -7,9 +7,9 @@
 calc.reflectance(reference, sample, logfile = "fieldlog.csv")
 }
 \arguments{
-\item{reference}{A \pckge{hyperSpec} object with radiometrically corrected 'reference' spectra}
+\item{reference}{A \pkg{hyperSpec} object with radiometrically corrected 'reference' spectra}
 
-\item{sample}{A \pckge{hyperSpec} object with radiometrically corrected 'sample' spectra}
+\item{sample}{A \pkg{hyperSpec} object with radiometrically corrected 'sample' spectra}
 
 \item{logfile}{Path to the corresponding logfile for the object}
 }
@@ -17,7 +17,7 @@ calc.reflectance(reference, sample, logfile = "fieldlog.csv")
 A hyperSpec object of 'reflectance' spectra
 }
 \description{
-Given a log file with columns sample identification, path to reference and sample measurements [id, R, S] and \pckge{hyperSpec} objects that represent reference and sample spectra, this function divides samples by references using the specified pairs
+Given a log file with columns sample identification, path to reference and sample measurements [id, R, S] and \pke{hyperSpec} objects that represent reference and sample spectra, this function divides samples by references using the specified pairs
 }
 \details{
 The format of the logfile must be followed (.CSV). FIXME make more flexible

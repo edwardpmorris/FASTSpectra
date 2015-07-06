@@ -7,7 +7,7 @@
 assign.type(dn, logfile = "fieldlog.csv")
 }
 \arguments{
-\item{dn}{A \pckge{hyperSpec} object}
+\item{dn}{A \pkg{hyperSpec} object}
 
 \item{logfile}{Path to the corresponding logfile for the object}
 }
@@ -15,7 +15,7 @@ assign.type(dn, logfile = "fieldlog.csv")
 A hyperSpec object including with sample identification [id] and indication if a reference measurement [is.REF]
 }
 \description{
-Given a log file with columns sample identification, path to reference and sample measurements [id, R, S] this function creates a logical vector [is.REF] with the \pckge{hyperSpec}
+Given a log file with columns sample identification, path to reference and sample measurements [id, R, S] this function creates a logical vector [is.REF] with the \pkg{hyperSpec}
 }
 \details{
 The format of the logfile must be followed (.CSV). FIXME make more flexible

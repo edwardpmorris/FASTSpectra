@@ -1,11 +1,11 @@
 #'@title Calculate reflectance spectra using a logfile to assign reference-sample pairs
 #' 
-#'@description Given a log file with columns sample identification, path to reference and sample measurements [id, R, S] and \pckge{hyperSpec} objects that represent reference and sample spectra, this function divides samples by references using the specified pairs
+#'@description Given a log file with columns sample identification, path to reference and sample measurements [id, R, S] and \pkg{hyperSpec} objects that represent reference and sample spectra, this function divides samples by references using the specified pairs
 #'
 #'@details The format of the logfile must be followed (.CSV). FIXME make more flexible    
 #'
-#' @param reference A \pckge{hyperSpec} object with radiometrically corrected 'reference' spectra
-#' @param sample A \pckge{hyperSpec} object with radiometrically corrected 'sample' spectra
+#' @param reference A \pkg{hyperSpec} object with radiometrically corrected 'reference' spectra
+#' @param sample A \pkg{hyperSpec} object with radiometrically corrected 'sample' spectra
 #' @param logfile Path to the corresponding logfile for the object
 #' @return A hyperSpec object of 'reflectance' spectra
 #' @examples

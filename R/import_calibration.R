@@ -1,6 +1,6 @@
 #'@title Import an instrument or reference panel's calibration data
 #' 
-#'@description Given a path to folder that contains a file with instrument or reference panel specific calibration data this function imports the data into a \pkge{hyperSpec} object ready for use in radiometric correction
+#'@description Given a path to folder that contains a file with instrument or reference panel specific calibration data this function imports the data into a \pkg{hyperSpec} object ready for use in radiometric correction
 #'
 #'@details At present an Ocean Optics format calibration file is expected e.g.,  '*.Irrad'. This has a 7 line header (YAML) and tab-delimited columns of 'wavelength' and    
 #'
@@ -162,12 +162,12 @@ import.calibration <- function (files = "*.IrradCal"
     
     # create spectra for conversion to diff units
     # solid angle
-    theta <- out@data$Full.angle.degrees/2 # theta_max [degrees]
+    theta <- out@data$Full.angle.degrees / 2 # theta_max [degrees]
     theta <- (theta)*(pi/ 180) # theta_max [radians]
     # see http://users.ox.ac.uk/~atdgroup/referencematerial/Notes%20on%20optical%20fibres%20and%20fibre%20bundles.pdf
-    s.angle <- pi * (sin(theta))^2 # steradians
+    #s.angle <- pi * (sin(theta))^2 # steradians
     # see https://en.wikipedia.org/wiki/Steradian
-    #s.angle <- 2*pi * (1- cos(theta)) # steradians
+    s.angle <- 2*pi * (1- cos(theta)) # steradians
     out@data$Solid.angle.collector.steradians <- s.angle
     # integrations time
     int.time <- out@data$Integration.Time.usec / 10^6 # seconds

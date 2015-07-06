@@ -4,8 +4,7 @@
 \alias{scan.txt.SpectraSuite}
 \title{Parse Ocean Optics SpectraSuite "text with header"}
 \usage{
-scan.txt.SpectraSuite(files = "*.txt", label = list(spc = "DN (counts)"),
-  ...)
+scan.txt.SpectraSuite(files = "*.txt", label = list(spc = "DN (counts)"))
 }
 \arguments{
 \item{files}{A specific file path or list of file paths. Default is select all text files in working directory \code{"*.txt"}}
@@ -13,7 +12,7 @@ scan.txt.SpectraSuite(files = "*.txt", label = list(spc = "DN (counts)"),
 \item{label}{A list of form \code{list(parameter=expression(parameter))}. Default is to label the parameter as "DN (counts)"}
 }
 \value{
-A hyperSpec object including a matrix of spectra, metadata extracted from the spectra headers and file information
+A \pkg{hyperSpec} object including a matrix of spectra, metadata extracted from the spectra headers and file information
 }
 \description{
 Parse Ocean Optics SpectraSuite "text with header"

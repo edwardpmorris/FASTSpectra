@@ -3,7 +3,7 @@
 #'
 #' @param files A specific file path or list of file paths. Default is select all text files in working directory \code{"*.txt"}
 #' @param label A list of form \code{list(parameter=expression(parameter))}. Default is to label the parameter as "DN (counts)"
-#' @return A hyperSpec object including a matrix of spectra, metadata extracted from the spectra headers and file information
+#' @return A \pkg{hyperSpec} object including a matrix of spectra, metadata extracted from the spectra headers and file information
 #' @examples
 #' setwd("~/Desktop/FASTSpectra") # DELETE ME
 #' out <- scan.txt.SpectraSuite(files="data_for_tst/*.txt")
@@ -11,7 +11,6 @@
 scan.txt.SpectraSuite <- function (
   files = "*.txt"
   , label = list (spc = "DN (counts)")
-  , ...
   ) 
   
 {

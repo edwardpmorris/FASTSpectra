@@ -12,7 +12,8 @@
 #'
 #' @param dn A \pkg{hyperSpec} object that includes a matrix of hyperspectral digital number values [counts] and a dataframe that includes the 'integration time' of each spectrum
 #' @param cal.DN2RadiantEnergy Path to a file that contains the instrument specific calibration for conversion from counts to radiant energy  [uJ/count]
-#' @param type The type of conversion to be calculated. See details 
+#' @param type The type of conversion to be calculated. See details
+#' @param is.REF Is the spectra of a 'reference panel'. If true the spectra is multiplied by panel-specific reflectance (must be supplied) 
 #' @param cal.RRefPanel Path to a file that contains the reference panel specific calibration of reflectance [-]
 #' @param coll.area Surface area of the instruments optical collection apparatus [m2]
 #' @param int.time Integration time of spectral measurement [s]. Default is NULL, in which case the times are derived from the hyperSpec object. FIXME uses OO-SS specific header, make more flexible
@@ -42,11 +43,11 @@ rad.corr <- function (dn, type=c("DN.snm", "spectral.radiance", "spectral.irradi
     
     # convert to counts per second per nm 
     rad <- dn
-    mat <- dn@data$spc
+    mat <- rad@data$spc
     for( i in 1:dim(mat)[1]){
-      mat[i, ] <- mat[i, ]/(int.time.usec[i]*dL)
+      mat[i, ] <- (mat[i, ]/int.time.usec[i])/dL
     }
-    rad@data$spc <- mat # counts/s nm
+    rad@data$spc <- mat # norm.DN [counts/s nm]
     rad@label$spc <- expression(paste("DN (counts ", ~s^{-1}, ~nm^{-1}, ")"))
 
     if(type=="spectral.radiance"){

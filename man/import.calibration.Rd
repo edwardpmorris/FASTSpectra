@@ -17,14 +17,14 @@ import.calibration(files = "*.IrradCal", type, label = NULL)
 A hyperSpec object including a matrix of spectra, metadata extracted from the spectra headers and file information
 }
 \description{
-Given a path to folder that contains a file with instrument or reference panel specific calibration data this function imports the data into a \pckge{hyperSpec} object ready for use in radiometric correction
+Given a path to folder that contains a file with instrument or reference panel specific calibration data this function imports the data into a \pkg{hyperSpec} object ready for use in radiometric correction
 }
 \details{
 At present an Ocean Optics format calibration file is expected e.g.,  '*.Irrad'. This has a 7 line header (YAML) and tab-delimited columns of 'wavelength' and
 }
 \examples{
 setwd("~/Desktop/FASTSpectra") # DELETE ME
-cal.irrad <- import.calibration(type=="uJ/count", files="calibration/*.IrradCal")
+cal.irrad <- import.calibration(type="uJ/count", files="calibration/*.IrradCal")
 plot(cal.irrad, wl.range=400:850)
 cal.ref <- import.calibration(type="R_ref_panel", files="calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
 plot(cal.ref, wl.range=400:850)
