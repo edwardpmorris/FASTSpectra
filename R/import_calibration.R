@@ -156,14 +156,14 @@ import.calibration <- function (files = "*.IrradCal"
     nam <- names(out@data)
     nam[5] <- "Integration.Time.usec"
     nam[8] <- "Fiber.um"
-    nam[9] <- "Acceptance.angle.degrees"
+    nam[9] <- "Full.angle.degrees"
     names(out@data) <- nam
     
     
     # create spectra for conversion to diff units
     # solid angle
     # see http://users.ox.ac.uk/~atdgroup/referencematerial/Notes%20on%20optical%20fibres%20and%20fibre%20bundles.pdf
-    theta <- out@data$Acceptance.angle.degrees*(pi/ 180) # radians
+    theta <- (out@data$Full.angle.degrees/2)*(pi/ 180) # radians
     s.angle <- pi * (sin(theta))^2 # steradians
     out@data$Solid.angle.collector.steradians <- s.angle
     # integrations time
@@ -174,11 +174,11 @@ import.calibration <- function (files = "*.IrradCal"
     # collection area
     d <- out@data$Fiber.um # um
     d <- d / 10^6 # m
-    coll.area <- pi * (d / 2) ^ 2 # m2
+    coll.area <- pi * ((d / 2)^2) # m2
     
     # calculate
     rad <- out@data$spc[1,] / 10^6 # J / count
-    rad <- out@data$spc[1,] / int.time # J / s count = W / count
+    rad <- rad / int.time # J / s count = W / count
     rad <- rad / s.angle # W / sr count
     rad <- rad / dL # W / sr nm count
     rad <- rad / coll.area # W / sr m2 nm count
