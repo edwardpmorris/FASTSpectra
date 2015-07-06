@@ -11,10 +11,11 @@
 #' @examples
 #' setwd("~/Desktop/FASTSpectra") # DELETE ME
 #' out <- import.calibration(files="calibration/*.IrradCal")
+#' plot(out, wl.range=400:850)
 #' @export
 import.calibration <- function (
   files = "*.IrradCal"
-  , label = list (spc = expression(paste( C [ Q [ e ] ] , " (" , mu, J, ~count^-1, ")")))
+  , label = list (spc = expression(paste( C [ L [ e ] ] , " (" , mu, W, ~sr^-1, ~cm^-2, ~nm^-1, ~count^-1, ")")))
   ) 
   
 {
@@ -38,11 +39,12 @@ import.calibration <- function (
   # extract metadata
   #require(yaml)
   header <- yaml::yaml.load(
-    paste(readLines(files [1], n=8), collapse ="\n")
+    paste(readLines(files [1], n=9), collapse ="\n")
     )
   
+  # FIXME change cal file to yaml(xml) structure
   # extract spectral data
-  buffer <- matrix (scan (files [1], skip=10, nlines=2048), ncol = 2, byrow = T)
+  buffer <- matrix (scan (files [1], skip=11, nlines=2048), ncol = 2, byrow = T)
   
   # delete: checking cal file
   #tst <- read.delim(files[1], skip=9, nrows=2048, header = F)
@@ -59,22 +61,22 @@ import.calibration <- function (
   
   ## preallocate the spectra matrix:
   # one row per file x as many columns as the first file has
-  spc <- matrix (ncol = nrow (buffer), nrow = length (files))
+  spc <- matrix (ncol = nrow (buffer), nrow = 1)
   
   # the first file's data goes into the first row
   spc [1, ] <- buffer[, 2]
   
   # now read the remaining files
-  for (f in seq (along = files)[-1]) {
-    header <- yaml::yaml.load(paste(readLines(files [f], skip=2, n=14)[3:14], collapse ="\n"))
-    buffer <- matrix (scan (files [f], skip=17, nlines=2048), ncol = 2, byrow = TRUE)
-    ## check whether they have the same wavelength axis
-    if (! all.equal (buffer [, 1], wavelength))
-      stop (paste(files [f], "has different wavelength axis."))
-    meta[f, ] <- as.data.frame(header, stringsAsFactors = F)
-    spc [f, ] <- buffer[, 2]
-  }
-  
+#   for (f in seq (along = files)[-1]) {
+#     header <- yaml::yaml.load(paste(readLines(files [f], skip=2, n=14)[3:14], collapse ="\n"))
+#     buffer <- matrix (scan (files [f], skip=17, nlines=2048), ncol = 2, byrow = TRUE)
+#     ## check whether they have the same wavelength axis
+#     if (! all.equal (buffer [, 1], wavelength))
+#       stop (paste(files [f], "has different wavelength axis."))
+#     meta[f, ] <- as.data.frame(header, stringsAsFactors = F)
+#     spc [f, ] <- buffer[, 2]
+#   }
+#   
   # add the file info to header metadata
   data <- data.frame (file = basename(files), stringsAsFactors = F)
   data <- cbind(data, meta)
@@ -103,22 +105,41 @@ import.calibration <- function (
  }
 out@data$Date <- unlist(lapply(out@data$Date, parse_ymdhms_tz))
 out@data$file <- as.character(out@data$file)
-  
-  # fix some names
-  nam <- names(out@data)
-  nam[5] <- "Integration.Time.usec"
-  nam[8] <- "Fibre.um"
-  names(out@data) <- nam
-  
-#   out@data$Integration.Time.usec <- as.numeric(
-#     matrix(
-#       unlist(
-#         strsplit(
-#           out@data$Integration.Time.usec,split = " ")
-#         ), ncol=2, byrow = T
-#       )[,1]
-#     )
-  
+
+
+# fix some names
+nam <- names(out@data)
+nam[5] <- "Integration.Time.usec"
+nam[8] <- "Fiber.um"
+nam[9] <- "Acceptance.angle.degrees"
+names(out@data) <- nam
+
+
+# create spectra for conversion to diff units
+# solid angle
+theta <- (pi*out@data$Acceptance.angle.degrees)/180 # radians
+s.angle <- 2*pi * (1 - cos(theta)) # steradians
+out@data$Solid.angle.collector.steradians <- s.angle
+# integrations time
+int.time <- out@data$Integration.Time.usec/10^6 # seconds
+# get wavelength spread IS THIS FWHM?
+dL <- diff(out@wavelength, lag=1, differences = 1)/2 # nm
+dL <- c(dL[1],dL) # make same length as wavelength
+# collection area
+d <- out@data$Fiber.um
+d <- d/10^3 # cm
+coll.area <- pi * (d/2) ^2 # cm2
+
+# calculate
+rad <- out@data$spc[1,]/int.time # uJ / s count = uW / count
+rad <- rad/s.angle # uW / sr count
+rad <- rad/dL # uW / sr nm count
+rad <- rad/coll.area # uW / sr cm2 nm count
+
+# add to object
+out@data$spc <- matrix(rad, nrow = 1, ncol= length(rad))
+out@data$Units <- c("uW / sr cm2 nm count")
+
   # return the object
   return(out)
 }

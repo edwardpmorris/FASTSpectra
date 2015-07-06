@@ -24,7 +24,7 @@
 #' rad <- rad.corr(dn, type="DN.s")
 #' plot(rad)
 #' rad <- rad.corr(dn, type="Irradiance", cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal")
-#' plot(rad*100*100, wl.range=390:700)
+#' plot(rad*100*100, wl.range=390:850)
 #' ref <- rad.corr(dn, is.REF=TRUE, cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
 #' plot(rad/ref)
 #' @export
@@ -54,31 +54,30 @@ rad.corr <- function (dn, type=c("DN.s", "RadFlux", "Radiance", "Irradiance", "I
     # load calibration files
     if(!is.null(cal.DN2RadiantEnergy)){
       cal.DN2RadiantEnergy <- 
-        import.calibration(files = cal.DN2RadiantEnergy
-                           , label = list (spc = expression(paste(italic(C[Q[e]]), " (", mu, "J ",count^{-1},")" ))
-                                           ))
+        import.calibration(files = cal.DN2RadiantEnergy)
       # to allow for different wavelengths
       cal.DN2RE <- approxfun(cal.DN2RadiantEnergy@wavelength
                                 , cal.DN2RadiantEnergy@data$spc[1,])
     } else {stop("cal.DN2RadiantEnergy not found, please supply path to the instrument-specific calibration file for conversion to irradiance")}
   
     # try and calculate coll.area from calibration file
-    if(is.null(coll.area)){
-      if(!is.null(cal.DN2RadiantEnergy@data$Fibre.um)){
-        d <- cal.DN2RadiantEnergy@data$Fibre.um
-        d <- d/10^3 # cm
-        coll.area <- pi * (d/2) ^2 # cm2
-      }else{stop("coll-area not found, please supply the instrument optical collection area [m2]")}
-      }
-    
+#     if(is.null(coll.area)){
+#       if(!is.null(cal.DN2RadiantEnergy@data$Fibre.um)){
+#         d <- cal.DN2RadiantEnergy@data$Fibre.um
+#         d <- d/10^3 # cm
+#         coll.area <- pi * (d/2) ^2 # cm2
+#       }else{stop("coll-area not found, please supply the instrument optical collection area [m2]")}
+#       }
+#     
     # select spectra matrix
     mat <- rad@data$spc
+    s.angle <- cal.DN2RadiantEnergy@data$Solid.angle.collector.steradians
     # convert to uW (uJ per s) per cm2 per nm
     for( i in 1:dim(mat)[1]){
-      mat[i, ] <- (mat[i, ]*cal.DN2RE(rad@wavelength))/coll.area
+      mat[i, ] <- (mat[i, ]*cal.DN2RE(rad@wavelength))*s.angle
     }
     rad@data$spc <- mat
-    rad@label$spc <- expression(paste(italic( E [ e  *lambda ] ), " (", mu, "W ", m^{-2}, ~ nm^{-1}, ")"))
+    rad@label$spc <- expression(paste(italic( E [ e  *lambda ] ), " (", mu, "W ", cm^{-2}, ~ nm^{-1}, ")"))
   }
 
   
