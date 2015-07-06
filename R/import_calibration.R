@@ -26,7 +26,7 @@ import.calibration <- function (files = "*.IrradCal"
   }
   if (type == "uJ/count") {
     label = list (spc = expression(paste(
-      C [L [e]] , " (" , W, ~ sr ^ -1, ~ m ^ -2, ~ nm ^ -1, ~ count ^ -1, ")"
+      C [Q [e]] , " (" , J, ~ s, ~ nm, ~ count ^ -1, ")"
     )))
   }
   
@@ -165,9 +165,9 @@ import.calibration <- function (files = "*.IrradCal"
     theta <- out@data$Full.angle.degrees / 2 # theta_max [degrees]
     theta <- (theta)*(pi/ 180) # theta_max [radians]
     # see http://users.ox.ac.uk/~atdgroup/referencematerial/Notes%20on%20optical%20fibres%20and%20fibre%20bundles.pdf
-    #s.angle <- pi * (sin(theta))^2 # steradians
+    s.angle <- pi * (sin(theta))^2 # steradians
     # see https://en.wikipedia.org/wiki/Steradian
-    s.angle <- 2*pi * (1- cos(theta)) # steradians
+    #s.angle <- 2*pi * (1- cos(theta)) # steradians
     out@data$Solid.angle.collector.steradians <- s.angle
     # integrations time
     int.time <- out@data$Integration.Time.usec / 10^6 # seconds
@@ -181,14 +181,15 @@ import.calibration <- function (files = "*.IrradCal"
     
     # calculate
     rad <- out@data$spc[1,] / 10^6 # J / count
-    rad <- rad / int.time # J / s count = W / count
-    rad <- rad / s.angle # W / sr count
-    rad <- rad / dL # W / sr nm count
-    rad <- rad / coll.area # W / sr m2 nm count
+    #rad <- 1/rad # count/ J
+    rad <- rad * int.time # J s / count
+    #rad <- rad / s.angle # count / sr s J count
+    rad <- rad * dL # J s nm / count
+    #rad <- rad / coll.area # W / sr m2 nm count
     
     # add to object
     out@data$spc <- matrix(rad, nrow = 1, ncol = length(rad))
-    out@data$Units <- c("W / sr m2 nm count")
+    out@data$Units <- c("J s nm / count")
   }
   
   # return the object
