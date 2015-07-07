@@ -7,16 +7,22 @@
 #' @param files A specific file path or list of file paths. Default is select all text files in working directory \code{"*.IrradCal"}
 #' @param label A list of form \code{list(parameter=expression(parameter))}. Default is to label the parameter as "C_Q_e_ (uJ count^-1^)"
 #' @param type One of \code{c("uJ/count", "R_ref_panel")}.
-#' @return A hyperSpec object including a matrix of spectra, metadata extracted from the spectra headers and file information
+#' @return A \pkg{hyperSpec} object including a matrix of spectra, metadata extracted from the spectra headers and file information
 #' @examples
-#' setwd("~/Desktop/FASTSpectra") # DELETE ME
-#' cal.irrad <- import.calibration(type="uJ/count", files="calibration/*.IrradCal")
-#' plot(cal.irrad, wl.range=400:850)
-#' cal.ref <- import.calibration(type="R_ref_panel", files="calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
-#' plot(cal.ref, wl.range=400:850)
+#' # set path to data files
+#' file.path <- system.file("extdata", package = "FASTSpectra")
+#' 
+#' # parse radient energy calibration file
+#' cal.rad <- import.calibration(files = paste0(file.path,"*.IrradCal"), type = "uJ/count")
+#' summary(cal.rad)
+#' 
+#' #' # parse reference panel reflectance calibration file
+#' cal.ref <- import.calibration(files = paste0(file.path,"*.ReflCal"), type = "R_ref_panel")
+#' summary(cal.rad)
+#' 
 #' @export
 import.calibration <- function (files = "*.IrradCal"
-                                , type
+                                , type = "uJ/count"
                                 , label = NULL)
   
 {
@@ -36,7 +42,7 @@ import.calibration <- function (files = "*.IrradCal"
   files <- Sys.glob(files)
   
   # check and return empty object if no files found
-  requireNamespace("hyperSpec") #FIXME WORK OUT HOW TO CALL S4 METHODS IN A PACKAGE
+  requireNamespace("hyperSpec")
   if (length (files) == 0) {
     warning ("No calibration files found.")
     return (new ("hyperSpec"))

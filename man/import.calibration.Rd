@@ -4,7 +4,7 @@
 \alias{import.calibration}
 \title{Import an instrument or reference panel's calibration data}
 \usage{
-import.calibration(files = "*.IrradCal", type, label = NULL)
+import.calibration(files = "*.IrradCal", type = "uJ/count", label = NULL)
 }
 \arguments{
 \item{files}{A specific file path or list of file paths. Default is select all text files in working directory \code{"*.IrradCal"}}
@@ -14,7 +14,7 @@ import.calibration(files = "*.IrradCal", type, label = NULL)
 \item{label}{A list of form \code{list(parameter=expression(parameter))}. Default is to label the parameter as "C_Q_e_ (uJ count^-1^)"}
 }
 \value{
-A hyperSpec object including a matrix of spectra, metadata extracted from the spectra headers and file information
+A \pkg{hyperSpec} object including a matrix of spectra, metadata extracted from the spectra headers and file information
 }
 \description{
 Given a path to folder that contains a file with instrument or reference panel specific calibration data this function imports the data into a \pkg{hyperSpec} object ready for use in radiometric correction
@@ -23,10 +23,15 @@ Given a path to folder that contains a file with instrument or reference panel s
 At present an Ocean Optics format calibration file is expected e.g.,  '*.Irrad'. This has a 7 line header (YAML) and tab-delimited columns of 'wavelength' and
 }
 \examples{
-setwd("~/Desktop/FASTSpectra") # DELETE ME
-cal.irrad <- import.calibration(type="uJ/count", files="calibration/*.IrradCal")
-plot(cal.irrad, wl.range=400:850)
-cal.ref <- import.calibration(type="R_ref_panel", files="calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
-plot(cal.ref, wl.range=400:850)
+# set path to data files
+file.path <- system.file("extdata", package = "FASTSpectra")
+
+# parse radient energy calibration file
+cal.rad <- import.calibration(files = paste0(file.path,"*.IrradCal"), type = "uJ/count")
+summary(cal.rad)
+
+#' # parse reference panel reflectance calibration file
+cal.ref <- import.calibration(files = paste0(file.path,"*.ReflCal"), type = "R_ref_panel")
+summary(cal.rad)
 }
 

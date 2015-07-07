@@ -38,15 +38,29 @@ These only make sense if the 'measurement geometry', 'integration time' [s] of a
 Reference panel-specific reflectance over the wavelngth range of the measurement to be converted must be supplied to for reference panel values.
 }
 \examples{
-setwd("~/Desktop/FASTSpectra") # DELETE ME
-dn <- scan.txt.SpectraSuite(files="data_for_tst/*.txt")
-plot(dn)
-norm.dn <- rad.corr(dn, type="dn.snm")
-plot(norm.dn)
-rad <- rad.corr(dn, type="spectral.radiance", cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal")
-plot(rad, wl.range=390:850)
-ref <- rad.corr(dn, type="spectral.irradiance", is.REF=TRUE, cal.DN2RadiantEnergy = "calibration/USB2G14742_08202014_VIS_FIB.IrradCal", cal.RRefPanel = "calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt")
-plot(ref, wl.range=390:850)
-plot(rad/ref, wl.range=390:850)
+# set path to data files
+file.path <- system.file("extdata", package = "FASTSpectra")
+
+# parse spectra into hyperSpec object
+dn <- read.txt.OceanOptics(files=paste0(file.path,"/*.txt"))
+
+# assign measurement id and type using fieldlog file
+logfile <- paste0(file.path,"/fieldlog.csv")
+dn <- assign.type(dn, logfile=logfile)
+
+# split into sample and reference
+type <- slot(dn,"data")[["type"]]
+dn <- split(x=dn, f=type)
+
+# convert samples to spectral radiance [W / sr m2 nm]
+cal.rad <- paste0(file.path,"/*.IrradCal")
+rad <- rad.corr(dn$SAMP, type="spectral.radiance", cal.DN2RadiantEnergy = cal.rad)
+require(hyperSpec)
+plot(rad, wl.range=380:850)
+
+# convert references to spectral irradiance relative to 100\% reference panel [W / m2 nm]
+cal.ref <- paste0(file.path,"/*.ReflCal")
+ref <- rad.corr(dn$REF, type="spectral.irradiance", is.REF=TRUE, cal.DN2RadiantEnergy = cal.rad, cal.RRefPanel = cal.ref)
+plot(ref, wl.range=380:850)
 }
 

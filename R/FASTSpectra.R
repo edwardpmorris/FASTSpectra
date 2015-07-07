@@ -1,10 +1,12 @@
-#' Parse Ocean Optics spectra files.
+#' Parse and process Ocean Optics spectra files.
 #'
-#' FASTSpectra allows you to parse multiple OO spectra
-#' and include the instrument generated metadata. So far only "text with header" format is supported.
+#' FASTSpectra allows you to parse multiple Ocean Optics spectra
+#' , include the instrument generated metadata into a \pkg{hyperSpec} object.
+#' So far only "text with header" format is supported.
 #'
-#' The only function you're likely to need from \pkg{FASTSpectra} is
-#' \code{\link{scan.txt.SpectraSuite}}. 
+#' The main functions you're likely to need from \pkg{FASTSpectra} are
+#' \code{\link{read.txt.OceanOptics}}, \code{\link{rad.corr}} 
+#' and \code{\link{calc.reflectance}}. 
 #'
 #' @docType package
 #' @name FASTspectra

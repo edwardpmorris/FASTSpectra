@@ -4,9 +4,9 @@
 library(hyperSpec)
 library(FASTSpectra)
 # check calibration files are ok
-cal.rad <- import.calibration("calibration/USB2G14742_08202014_VIS_FIB.IrradCal", type="uJ/count")
+cal.rad <- import.calibration("extdata/USB2G14742_08202014_VIS_FIB.IrradCal", type="uJ/count")
 plot(cal.rad)
-cal.ref <- import.calibration("calibration/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.txt", type="R_ref_panel")
+cal.ref <- import.calibration("extdata/DF25A-5863_SRT-20-050_Reflectance_2008-12-24.ReflCal", type="R_ref_panel")
 plot(cal.ref)
 # parse spectra into hyperSpec object
 dn <- scan.txt.SpectraSuite(files="data_for_tst/*.txt")
