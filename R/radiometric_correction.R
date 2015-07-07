@@ -40,7 +40,7 @@
 #' 
 #' # convert references to spectral irradiance relative to 100% reference panel [W / m2 nm]
 #' cal.ref <- paste0(file.path,"/*.ReflCal")
-#' ref <- rad.corr(dn$REF, type="spectral.irradiance", is.REF=TRUE, cal.DN2RadiantEnergy = cal.rad, cal.RRefPanel = cal.ref)
+#' ref <- rad.corr(dn$REF, type="spectral.radiance", is.REF=TRUE, cal.DN2RadiantEnergy = cal.rad, cal.RRefPanel = cal.ref)
 #' plot(ref, wl.range=380:850)
 #' 
 #' @export
@@ -55,148 +55,142 @@ rad.corr <- function (dn
   meta <- dn@data
   meta$spc <- NULL
   
-  # convert to normalised DN [counts / s nm] ------------------------------------------------
-  ## get integration time
-  int.time.usec <- meta$Integration.Time.usec # micro seconds
-  int.time.usec <- int.time.usec / 10 ^ 6 # seconds
-  
-  ## get wavelength spread ??IS THIS SAME AS FWHM??
-  dL <- diff(dn@wavelength, lag = 1, differences = 1) / 2 # nm
-  dL <- c(dL[1],dL) # make vector same length as wavelength
-  
-  # convert
-  rad <- dn
-  mat <- rad@data$spc
-  for (i in 1:dim(mat)[1]) {
-    mat[i,] <- mat[i,] / (int.time.usec[i] * dL)
+  # define radiometric helper functions ------------------------------------------------
+  ## get specific integration times of spectra
+  get.int.time <- function (dn) {
+    int.time <- dn@data$Integration.Time.usec # micro seconds
+    int.time <- int.time / 10 ^ 6 # seconds
+    return(int.time)
   }
-  rad@data$spc <- mat # norm.DN [counts/s nm]
-  rad@label$spc <-
-    expression(paste("DN (counts ", ~ s ^ {
-      -1
-    }, ~ nm ^ {
-      -1
-    }, ")"))
-  if (type == "norm.DN")
-    stop(return(rad))
   
-  # begin radiometric conversion ------------------------------------------------
-  if (type != "norm.DN") {
-    # load calibration files
-    if (!is.null(cal.DN2RadiantEnergy)) {
-      cal.DN2RadiantEnergy <-
-        import.calibration(files = cal.DN2RadiantEnergy, type = "uJ/count")
-      # to allow for different wavelengths
-      cal.DN2RE <-
-        approxfun(cal.DN2RadiantEnergy@wavelength, cal.DN2RadiantEnergy@data$spc[1,])
-    } else {
-      stop(
-        "cal.DN2RadiantEnergy not found, please supply path to the instrument-specific calibration file for conversion to irradiance"
-      )
+  ## get wavelength spread of spectra
+  get.wl.spread <- function (dn) {
+    dL <- diff(dn@wavelength, lag = 1, differences = 1) / 2 # nm
+    dL <- c(dL[1],dL) # make vector same length as wavelength
+    return(dL)
+  }
+  
+  ## load calibration file and prepare for use
+  import.cal.rad <- function (cal.DN2RadiantEnergy) {
+    cal.rad <- import.calibration(files = cal.DN2RadiantEnergy, type = "uJ/count")
+    return(cal.rad)
+  }
+  
+  # to allow for different wavelengths
+  make.cal.approx <- function (cal.DN2RadiantEnergy) {
+    cal.rad <- import.cal.rad(cal.DN2RadiantEnergy)
+    cal.DN2RE <- approxfun(cal.rad@wavelength, cal.rad@data$spc[1,])
+    return(cal.DN2RE)
+  }
+  
+  # convert to normalised DN [counts / s nm] ------------------------------------------------
+  normDN <- function (dn) {
+    int.time <- get.int.time(dn)
+    dL <- get.wl.spread(dn)
+    mat <- dn@data$spc
+    for (i in 1:dim(mat)[1]) {
+      mat[i,] <- mat[i,] / (int.time[i] * dL) # divide by integration time [s] and wavelength spread [nm]
     }
+    dn@data$spc <- mat # norm.DN [counts/s nm]
+    dn@label$spc <- expression(paste("DN (counts ", ~ s ^ {-1}, ~ nm ^ {-1}, ")"))
+    return(dn)
   }
   
   # convert to radiant energy (Q) [J] ------------------------------------------------
   # (count / s nm) * (J s nm / count)
-  rad <-
-    hyperSpec::apply(
-      rad, MARGIN = 1, FUN = function(x)
-        x * cal.DN2RE(rad@wavelength)
+  radiant.energy <- function (normDN, cal.DN2RadiantEnergy) {
+    cal.DN2RE <- make.cal.approx(cal.DN2RadiantEnergy)
+    rad <- hyperSpec::apply(normDN, MARGIN = 1, FUN = function(x)
+      x * cal.DN2RE(normDN@wavelength)
     )
-  rad@label$spc <-
-    expression(paste(italic(Q [list(e)]), " (J)"))
-  if (type == "radiant.energy")
-    stop(return(rad))
+    rad@label$spc <-
+      expression(paste(italic(Q [list(e)]), " (J)"))
+    return(rad)
+  }
   
   # convert to spectral flux [W / nm] ------------------------------------------------
-  mat <- rad@data$spc
-  for (i in 1:dim(mat)[1]) {
-    # integrations time
-    int.time <- rad@data$Integration.Time.usec[i] / 10 ^ 6 # seconds
-    mat[i,] <-
-      mat[i,] / (int.time * dL) # W per sr per s per m2 per nm
-  }
-  rad@data$spc <- mat
-  rad@label$spc <-
-    expression(paste(italic(Phi [list(e, lambda)]), " (W)", nm ^ {
-      -1
-    }))
-  if (type == "spectral.flux" & is.REF == F) {
-    stop(return(rad))
+  spectral.flux <- function (normDN, cal.DN2RadiantEnergy) {
+    rad <- radiant.energy(normDN, cal.DN2RadiantEnergy)
+    int.time <- get.int.time(rad)
+    dL <- get.wl.spread(rad)
+    mat <- rad@data$spc
+    for (i in 1:dim(mat)[1]) {
+      mat[i,] <- mat[i,] / (int.time[i] * dL)
+    }
+    rad@data$spc <- mat # W (J/s) per nm
+    rad@label$spc <-
+      expression(paste(italic(Phi [list(e, lambda)]), " (W)", nm ^ {-1}))
+    return(rad)
   }
   
-  if (type == "spectral.intensity" | type == "spectral.radiance") {
   # convert to spectral intensity [W / sr nm] -------------------------------------------
-  s.angle <-
-    cal.DN2RadiantEnergy@data$Solid.angle.collector.steradians
-  rad <- hyperSpec::apply(rad, 1, function(x)
-    x / s.angle)
-  rad@label$spc <-
-    expression(paste(italic(I [list(e, Omega, lambda)]), " (", "W ", sr ^ {
-      -1
-    }, ~ nm ^ {
-      -1
-    }, ")"))
-  if (type == "spectral.intensity" & is.REF == F) {
-    stop(return(rad))
+  spectral.intensity <- function (normDN, cal.DN2RadiantEnergy) {
+    rad <- spectral.flux(normDN, cal.DN2RadiantEnergy)
+    cal <- import.cal.rad(cal.DN2RadiantEnergy)
+    s.angle <- cal@data$Solid.angle.collector.steradians
+    rad <- hyperSpec::apply(rad, 1, function(x) x / s.angle)
+    rad@label$spc <- expression(paste(italic(I [list(e, Omega, lambda)]), " (", "W ", sr ^ {-1}, ~ nm ^ {-1}, ")"))
+    return(rad)
   }
   
   # convert to spectral radiance [ W / sr m2 nm] ----------------------------
-  if (type == "spectral.radiance" & is.REF == F) {
-  # collection area
-  d <- cal.DN2RadiantEnergy@data$Fiber.um # um
-  d <- d / 10 ^ 6 # m
-  coll.area <- pi * ((d / 2) ^ 2) # m2
-  rad <- hyperSpec::apply(rad, 1, function(x)
-    x / coll.area)
-  rad@label$spc <-
-    expression(paste(italic(L [list(e, Omega, lambda)]), " (", "W ", sr ^ {
-      -1
-    }, ~ m ^ {
-      -2
-    }, ~ nm ^ {
-      -1
-    }, ")"))
-  
-    stop(return(rad))
-    }
+  spectral.radiance <- function (normDN, cal.DN2RadiantEnergy) {
+    rad <- spectral.intensity(normDN, cal.DN2RadiantEnergy)
+    cal <- import.cal.rad(cal.DN2RadiantEnergy)
+    d <- cal@data$Fiber.um # um
+    d <- d / 10 ^ 6 # m
+    coll.area <- pi * ((d / 2) ^ 2) # collection area [m2]
+    rad <- hyperSpec::apply(rad, 1, function(x) x / coll.area)
+    rad@label$spc <- expression(paste(italic(L [list(e, Omega, lambda)]), " (", "W ", sr ^ {-1}, ~ m ^ {-2}, ~ nm ^ {-1}, ")"))
+    return(rad)
   }
   
   # convert to spectral irradiance [ W / m2 nm] ----------------------------
-  if (type == "spectral.irradiance") {
-    # collection area
-    d <- cal.DN2RadiantEnergy@data$Fiber.um # um
+  spectral.irradiance <- function (normDN, cal.DN2RadiantEnergy) {
+    rad <- spectral.flux(normDN, cal.DN2RadiantEnergy) 
+    cal <- import.cal.rad(cal.DN2RadiantEnergy)
+    d <- cal@data$Fiber.um # um
     d <- d / 10 ^ 6 # m
-    coll.area <- pi * ((d / 2) ^ 2) # m2
-    rad <- hyperSpec::apply(rad, 1, function(x)
-      x / coll.area)
-  rad@label$spc <-
-    expression(paste(italic(E [list(e, lambda)]), " (", "W ", ~ m ^ {
-      -2
-    }, ~ nm ^ {
-      -1
-    }, ")"))
-  if (type == "spectral.irradiance" & is.REF == F) {
-    stop(return(rad))
-  }
+    coll.area <- pi * ((d / 2) ^ 2) # # collection area [m2]
+    rad <- hyperSpec::apply(rad, 1, function(x) x / coll.area)
+    rad@label$spc <- expression(paste(italic(E [list(e, lambda)]), " (", "W ", ~ m ^ {-2}, ~ nm ^ {-1}, ")"))
+    return(rad)
   }
   
   # correct for reference panel reflectance [ W / m2 nm] ----------------------------
-  if (is.REF == TRUE) {
-    if (!is.null(cal.RRefPanel)) {
-      cal.RRefPanel <-
-        import.calibration(type = "R_ref_panel", files = cal.RRefPanel)
-      cal.RRP <-
-        approxfun(cal.RRefPanel@wavelength, cal.RRefPanel@data$spc[1,])
-      rad <-
-        hyperSpec::apply(
-          rad, MARGIN = 1, FUN = function(x)
-            x / cal.RRP(rad@wavelength)
-        )
-    }else{
-      stop("cal.RRefPanel not found, please supply path to reference panel calibration")
-    }
+  corr.ref.panel <- function (normDN, cal.RRefPanel) {
+    cal.RRefPanel <- import.calibration(type = "R_ref_panel", files = cal.RRefPanel)
+    cal.RRP <- approxfun(cal.RRefPanel@wavelength, cal.RRefPanel@data$spc[1,])
+    rad <- hyperSpec::apply(normDN, MARGIN = 1, FUN = function(x) x / cal.RRP(normDN@wavelength))
+    return(rad)
   }
   
+  # begin radiometric conversion ------------------------------------------------
+  
+  # decide which units to return
+  # all units start with normDN
+  normDN <- normDN(dn) # [count/ s nm]
+  
+  # correct for ref panel?
+  if(is.REF==T) normDN <- corr.ref.panel(normDN, cal.RRefPanel)
+  
+  # return desired units
+  if (type == "normDN"){stop(return(normDN))
+    }else{
+      if (type == "radiant.energy"){rad <- radiant.energy(normDN, cal.DN2RadiantEnergy)
+      }else{
+        if (type == "spectral.flux"){rad <- spectral.flux(normDN, cal.DN2RadiantEnergy)
+        }else{
+          if (type == "spectral.intensity"){rad <- spectral.intensity(normDN, cal.DN2RadiantEnergy)
+          }else{
+            if (type == "spectral.radiance" ) {rad <- spectral.radiance(normDN, cal.DN2RadiantEnergy)
+            }else{
+              if (type == "spectral.irradiance") {rad <- spectral.irradiance(normDN, cal.DN2RadiantEnergy)}
+            }
+          }
+        }
+      }
+    }
+
   return(rad)
 }

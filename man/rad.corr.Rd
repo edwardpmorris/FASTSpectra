@@ -60,7 +60,7 @@ plot(rad, wl.range=380:850)
 
 # convert references to spectral irradiance relative to 100\% reference panel [W / m2 nm]
 cal.ref <- paste0(file.path,"/*.ReflCal")
-ref <- rad.corr(dn$REF, type="spectral.irradiance", is.REF=TRUE, cal.DN2RadiantEnergy = cal.rad, cal.RRefPanel = cal.ref)
+ref <- rad.corr(dn$REF, type="spectral.radiance", is.REF=TRUE, cal.DN2RadiantEnergy = cal.rad, cal.RRefPanel = cal.ref)
 plot(ref, wl.range=380:850)
 }
 

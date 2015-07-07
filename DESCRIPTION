@@ -1,5 +1,5 @@
 Package: FASTSpectra
-Title: Parse Ocean Optics spectra files
+Title: Parse and radiometrically correct Ocean Optics spectra files
 Version: 0.1.0
 Authors@R: person("Edward P.", "Morris", email ="edward.morris@uca.es", role = c("aut", "cre"))
 Description: FASTSpectra allows you to parse multiple Ocean Optics spectra, include the instrument generated metadata and perform radiometric corrections. So far only "text with header" format is supported.
