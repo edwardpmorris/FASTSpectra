@@ -2,7 +2,6 @@ id,R,S
 clover,ft1_r.txt,ft1_cl_1.txt
 grass,ft_r2.txt,ft_grass_1.txt
 concrete,ft_ref3.txt,ft_conc_1.txt
-White-SRT08,ft_ref3.txt,ft_white.txt
 clover,ft_ref_4.txt,ft_clov_2.txt
 grass,ft_ref_6.txt,ft_grass_2.txt
 concrete,ft_ref_7.txt,ft_conc_2.txt
