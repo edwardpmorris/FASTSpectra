@@ -17,19 +17,19 @@ dn <- assign.type(dn, logfile=logfile)
 type <- slot(dn,"data")[["type"]]
 dn <- split(x=dn, f=type)
 
-# convert samples to spectral radiance [W / m2 nm]
+# convert samples to spectral irradiance [W / m2 nm]
 cal.rad <- paste0(file.path,"/*.IrradCal")
 rad <- rad.corr(dn$SAMP, type="spectral.irradiance", cal.DN2RadiantEnergy = cal.rad)
 require(hyperSpec)
 par(mar=c(3.5, 3.5, 2, 1) + 0.1, mfrow=c(3,1), mgp=c(2,0.5,0))
 plot(rad, wl.range=380:850)
 
-# convert references to spectral radiance relative to 100% reference panel [W / m2 nm]
+# convert references to spectral irradiance relative to 100% reference panel [W / m2 nm]
 cal.ref <- paste0(file.path,"/*.ReflCal")
 ref <- rad.corr(dn$REF, type="spectral.irradiance", is.REF=TRUE, cal.DN2RadiantEnergy = cal.rad, cal.RRefPanel = cal.ref)
 plot(ref, wl.range=380:850)
 
-# calculate reflectance as 'radiance/irradiance'
+# calculate reflectance as 'irradiance/irradiance'
 SHR <- calc.reflectance(reference=ref, sample=rad, logfile=logfile)
 #plot(SHR, wl.range=380:850)
 
