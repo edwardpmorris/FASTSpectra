@@ -34,8 +34,8 @@ read.txt.OceanOptics <- function (
   }
   
   # assumes modified time is collection time: FIXME change to header timestamp
-  mtime <- as.POSIXct(file.info(files)$mtime, tz="GMT")
-  mtime <- format(mtime, tz="GMT", usetz=TRUE)
+  #mtime <- as.POSIXct(file.info(files)$mtime, tz="GMT")
+  #mtime <- format(mtime, tz="GMT", usetz=TRUE)
   
   ## read the first file
   # extract metadata
@@ -43,6 +43,7 @@ read.txt.OceanOptics <- function (
   header <- yaml::yaml.load(
     paste(readLines(files [1], n=14)[3:14], collapse ="\n")
     )
+  
   
   # extract spectral data
   buffer <- matrix (scan (files [1], skip=17, nlines=2048), ncol = 2, byrow = TRUE)
@@ -87,8 +88,15 @@ read.txt.OceanOptics <- function (
        )
   
   # format (meta)data
-  # FIXME assumes always in UTC
-  out@data$timestamp <- as.POSIXct(out@data$timestamp, tz="GMT")
+  parse.timestamp <- function(timestamp){
+    tims <- lapply(fl,function(x){
+      timestamp <- readLines(x,n=3)[3]
+      timestamp <- strsplit(timestamp, " ")[[1]]
+      timestamp <- lubridate::ymd_hms(paste(timestamp[c(7,3,4,5)], collapse = " "),tz = timestamp[c(6)])
+    })
+    return(unlist(tims))
+  }
+  out@data$timestamp <- parse.timestamp(out@data$timestamp)
   out@data$file <- as.character(out@data$file)
   
   # fix some names
