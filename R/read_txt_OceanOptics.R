@@ -88,10 +88,13 @@ read.txt.OceanOptics <- function (
        )
   
   # format (meta)data
+  
+  
   parse.timestamp <- function(timestamp){
-      timestamp <- strsplit(timestamp, " ")[[1]]
-      timestamp <- lubridate::ymd_hms(paste(timestamp[c(7,3,4,5)], collapse = " "),tz = timestamp[c(6)])
-    return(timestamp)
+    tims <- stringr::str_split_fixed(timestamp, " ", n=6)
+    tms<- data.frame(tz = tims[,c(5)], timestamp=apply(tims[,c(6,2,3,4)], 1, paste, collapse=" "), stringsAsFactors = F)
+    out <- lubridate::parse_date_time(tms[,"timestamp"],"%y %b %d %H:%M:%S", locale ="en_GB.utf8", tz =unique(tms[,"tz"]))
+    return(out)
   }
   out@data$timestamp <- parse.timestamp(out@data$Date)
   out@data$file <- as.character(out@data$file)
