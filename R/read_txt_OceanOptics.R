@@ -74,7 +74,7 @@ read.txt.OceanOptics <- function (
   }
   
   # add the file info to header metadata
-  data <- data.frame (file = basename(files), timestamp = mtime, stringsAsFactors = F)
+  data <- data.frame (file = basename(files), stringsAsFactors = F)
   data <- cbind(data, meta)
   
   ## make the hyperSpec object
@@ -89,14 +89,11 @@ read.txt.OceanOptics <- function (
   
   # format (meta)data
   parse.timestamp <- function(timestamp){
-    tims <- lapply(fl,function(x){
-      timestamp <- readLines(x,n=3)[3]
       timestamp <- strsplit(timestamp, " ")[[1]]
       timestamp <- lubridate::ymd_hms(paste(timestamp[c(7,3,4,5)], collapse = " "),tz = timestamp[c(6)])
-    })
-    return(unlist(tims))
+    return(timestamp)
   }
-  out@data$timestamp <- parse.timestamp(out@data$timestamp)
+  out@data$timestamp <- parse.timestamp(out@data$Date)
   out@data$file <- as.character(out@data$file)
   
   # fix some names
