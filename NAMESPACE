@@ -2,6 +2,9 @@
 
 export(assign.type)
 export(calc.reflectance)
+export(getSeason)
 export(import.calibration)
 export(rad.corr)
 export(read.txt.OceanOptics)
+export(read.txt.wide.FAST)
+export(write.txt.wide.FAST)
