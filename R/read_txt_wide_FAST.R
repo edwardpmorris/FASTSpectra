@@ -42,7 +42,7 @@
 #' 
 #' # read txt.wide file
 #' # read.txt.wide.FAST <- function(paste0(file.path,"/HCRF.spc"), type="reflectance", metadata=paste0(file.path,"/HCRF-metadata.spc"))
-read.txt.wide.FAST <- function(file, type="reflectance", metadata=NULL){
+read.txt.wide.FAST <- function(file, type="reflectance", metadata=NULL, sep="\t"){
   # specify spectra type
   spc.label <- expression(R [ list(Omega, lambda) ] )
   if(type=="irradiance"){
@@ -51,9 +51,9 @@ read.txt.wide.FAST <- function(file, type="reflectance", metadata=NULL){
   cols <- list (id= "Sample ID", timestamp= "Date time"
                 , .wavelength = expression(lambda~(nm)), spc=spc.label)
   # parse file
-  out <- hyperSpec::read.txt.wide(file, cols = cols, header = T, check.names=F, stringsAsFactors =F)
+  out <- hyperSpec::read.txt.wide(file, cols = cols, header = T, check.names=F, stringsAsFactors =F, sep=sep)
   out@data$timestamp <- as.POSIXct(out@data$timestamp)
-  if(!is.null(data)){
+  if(!is.null(metadata)){
     dat <- read.csv(metadata, stringsAsFactors =F)
     out@data <- cbind(out@data, dat)
   }
