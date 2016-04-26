@@ -1,6 +1,6 @@
 #' Write FAST specrum data to text file
 #'
-#' @param spc The \pckg{hyperSpec} object to be written
+#' @param spc The \pkg{hyperSpec} object to be written
 #' @param file The file path of the spectral data
 #' @param file.meta The file path of the associated metadata
 #'

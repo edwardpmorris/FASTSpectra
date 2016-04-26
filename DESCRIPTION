@@ -5,12 +5,15 @@ Authors@R: person("Edward P.", "Morris", email ="edward.morris@uca.es", role = c
 Description: FASTSpectra allows you to parse multiple Ocean Optics spectra,
     include the instrument generated metadata and perform radiometric corrections.
     So far only "text with header" format is supported.
-Depends:
+Depends: 
     R (>= 3.1.0)
 License: GPL-2
 LazyData: false
-Imports:
+Imports: 
     hyperSpec (>= 0.98-20150),
     yaml (>= 2.1.13),
     lubridate (>= 1.3.3)
 RoxygenNote: 5.0.1
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

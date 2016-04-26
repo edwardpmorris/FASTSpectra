@@ -4,7 +4,7 @@
 #' @param type Reflectance, Irradiance or Radiance units 
 #' @param data Path to extra data, must have same number of rows as number of spectra
 #'
-#' @return A \pckg{hyperSpec} object
+#' @return A \pkg{hyperSpec} object
 #' @export
 #'
 #' @examples

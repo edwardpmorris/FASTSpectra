@@ -88,7 +88,7 @@ cal.rad <- paste0(file.path,"/*.IrradCal")
 
 # convert [DN/nm] to [W / m2 nm]
 sam <- rad.corr(dn$SAMP,
-                type="spectral.irradiance",
+                type="spectral.radiance",
                 cal.DN2RadiantEnergy = cal.rad
                 )
 
@@ -158,32 +158,70 @@ plot(SHR.quant
   
 ```
 
+
 ## Radiometric calculations in detail
+
+### Instrument-specific properties
+Conversion of instrument Digital Number counts to radiometric units requires instrument-specific metadata including;
+
++ The 'integration time' (*t*, s) of a measurement i.e., the time period over which the instrument records light through the measuring apature.
+
++ The 'diameter' (*d*, m) and 'full angle' or 'angular field of view' ($\theta$~fov~, °)  of the instrument light collection apature. For the OO-USB2000 these are often properties of the fibre optic that guides light into the detector array.
+
++ The viewing geometry of measurements ($\theta$~v~, °), expressed as an angle from the nadir (0°) viewing zenith. In general most ground-based spectrometry measurements aim for a $\theta$~v~ of 0°.  
+
++ The 'instrument-specific response function' or 'spectral response of each band' (*IRF*~$\lambda$~, J count^-1^). This may have different units, but must cover the full range of wavelengths of interest and should have the same spectral resolution as the instrument.
+
++ The 'spectral sampling interval' ($\lambda$, nm) i.e., the wavelength scale.
+
+From these properties the 'solid angle of the collector' in steradians (Ω, sr) is calculated as:
+
+$${\Omega} = \pi \times \sin \left( \frac{\theta_{fov}}{2} \times \frac{\pi}{180} \right)^{2}$$
+
+The surface area of the collection apature (*A*, m^2^) as:
+
+$$A = \pi \times \left(\frac{d}{2}\right)^2$$
+
+The projected area of the collection apature (*A*cos$\theta$, m^2^) as:
+
+$${A \cos \theta} = A \times \cos (\theta_{v})$$
+
+'Wavelength spread' or 'half-power bandwidths' (d~$\lambda$~, nm), i.e., the half-width of each band is calculated as:
+
+$$d_{\lambda} = \frac{\lambda_{i} - \lambda_{i+1}}{2}$$
+
+The normalised 'instrument-specific response function' (*IRF*~norm,$\lambda$~, J s nm count^-1^) is calculated as:
+
+$${IRF}_{\mathrm{norm, \lambda}} = \frac{t \times d_{\lambda}}{{IRF}_{\lambda}}$$
+
+where, *t* is the integration time of the calibration measurement.
 
 ### Normalised Digital Number counts (*DN*~norm~) [counts s^-1^ nm^-1^]
 Calculations begin with conversion of instrument counts spectra (*DN*~$\lambda$~) to normalised DN (*DN*~norm,$\lambda$~, counts s^-1^ nm^-1^) using the 'integration time' (*t*, s) i.e., the time period over which the instrument records light through the measuring apature, and the 'wavelength spread' i.e., the width of each band (d~$\lambda$~, nm).
 
-$$DN_{\mathrm{norm, \lambda}} = \frac{DN_{\lambda}}{t \times d_{\lambda}}$$
+$${DN}_{\mathrm{norm, \lambda}} = \frac{{DN}_{\lambda}}{t \times d_{\lambda}}$$
 
-These only make sense if the 'measurement geometry', 'integration time' [s] of a measurement, 'surface area of the instrument light apature' [m], and 'instrument-specific response function' in radiant energy (e.g., J/count or other units) is known and supplied to the function.
+### Radiant energy (*Q*) [J] 
+Using the normalised instrument-specific response function (*IRF*~$norm,\lambda$~, J s nm count^-1^), radiant energy is calculated as:
 
+$$Q_{\mathrm{e}} = {{DN}_{\mathrm{norm, \lambda}}}\times{{IRF}_{norm, \lambda}}$$
 
-### Radiant energy (Q) [J] 
-If a 'instrument-specific response function' (*IRF*~$\lambda$~, J s nm count^-1^) is available, radiant energy is calculated as:
+### Spectral flux (*Φ*~e,λ~) [W / nm]
+Using the instrument-specific response function (*IRF*~$\lambda$~, J count^-1^), spectral flux is calculated as:
 
-$$Q_{\mathrm{e}} = {DN_{\mathrm{norm, \lambda}}}\times{IRF_{\lambda}}$$
+$$\Phi_{\mathrm{e, \lambda}} = {{DN}_{\mathrm{norm, \lambda}}}\times{{IRF}_{\lambda}}$$
 
-### Spectral flux (Φ~e,λ~) [W / nm]
-If a 'instrument-specific response function' (*IRF*~$\lambda$~, J count^-1^) is available, spectral flux is calculated as:
-
-$$\Phi_{\mathrm{e, \lambda}} = {DN_{\mathrm{norm, \lambda}}}\times{IRF_{\lambda}}$$
-
-### Spectral intensity (I~e,Ω,λ~) [W sr^-1^ nm^-1^]
-Using the 'solid angle of the collector' in steradians (Ω, sr) spectral intensity can be calculated as:
+### Spectral intensity (*I*~e,Ω,λ~) [W sr^-1^ nm^-1^]
+Using the solid angle of the collector apature in steradians (Ω, sr) spectral intensity can be calculated as:
 
 $$I_{\mathrm{e},\Omega, \lambda} = \frac{ \Phi_\mathrm{e, \lambda}}{ \Omega}$$
 
-### Spectral radiance [ W / sr m2 nm]
-Using the 'projected area of the collector' (*A*cos$\theta$), 
+### Spectral radiance (*L*~e,Ω,λ~) [W sr^-1^ m^-2^ nm^-1^]
+Using the projected area of the collector apature (*A*cos$\theta$), spectral radiance is calculated as:
 
 $$L_{\mathrm{e},\Omega, \lambda} = \frac{ I_{\mathrm{e},\Omega, \lambda}}{ A \cos \theta}$$
+
+### Spectral irradiance (*E*~e,λ~) [W m^-2^ nm^-1^]
+Using the surface area of the collection apature (*A*, m^2^), spectral irradiance is calculated as:
+
+$$E_\mathrm{e, \lambda} = \frac{\Phi_\mathrm{e, \lambda}}{A}$$

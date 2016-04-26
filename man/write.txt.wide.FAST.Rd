@@ -7,7 +7,7 @@
 write.txt.wide.FAST(spc, file, file.meta)
 }
 \arguments{
-\item{spc}{The \pckg{hyperSpec} object to be written}
+\item{spc}{The \pkg{hyperSpec} object to be written}
 
 \item{file}{The file path of the spectral data}
 

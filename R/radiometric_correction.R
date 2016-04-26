@@ -76,11 +76,11 @@ rad.corr <- function (dn
   }
   
   ## get wavelength spread of spectra
-  get.wl.spread <- function (dn) {
-    dL <- diff(dn@wavelength, lag = 1, differences = 1) / 2 # nm
-    dL <- c(dL[1], dL) # make vector same length as wavelength
-    return(dL)
-  }
+  # get.wl.spread <- function (dn) {
+  #   dL <- diff(dn@wavelength, lag = 1, differences = 1) / 2 # nm
+  #   dL <- c(dL[1], dL) # make vector same length as wavelength
+  #   return(dL)
+  # }
   
   ## load calibration file and prepare for use
   import.cal.rad <- function (cal.DN2RadiantEnergy) {
@@ -98,9 +98,9 @@ rad.corr <- function (dn
   
   # convert to normalised DN [counts / s nm] -----------------------------------
   normDN <- function (dn) {
-    int.time <- get.int.time(dn)
-    dL <- get.wl.spread(dn)
-    mat <- dn@data$spc
+    int.time <- dn@data$Integration.Time.sec # s
+    dL <- wavelength_spread(dn@wavelengths) # nm
+    mat <- dn@data$spc # DN
     # divide by integration time [s] and wavelength spread [nm]
     for (i in 1:dim(mat)[1]) {
       mat[i, ] <-
@@ -118,13 +118,13 @@ rad.corr <- function (dn
   
   # convert to radiant energy (Q) [J] ------------------------------------------
   # (count / s nm) * (J s nm / count)
-  radiant.energy <- function (normDN, cal.DN2RadiantEnergy) {
-    cal.DN2RE <- make.cal.approx(cal.DN2RadiantEnergy) # [J s nm / count]
+  radiant.energy <- function (normDN, cal.DN2SpectralFlux) {
+    cal <- make.cal.approx(cal.DN2SpectralFlux) # [J s nm / count]
     rad <- hyperSpec::apply(
       normDN, # [count/s nm]
       MARGIN = 1,
       FUN = function(x)
-        x * cal.DN2RE(normDN@wavelength)
+        x * cal(normDN@wavelength)
     )
     rad@label$spc <-
       expression(paste(italic(Q [list(e)]), " (J)"))
@@ -171,6 +171,7 @@ rad.corr <- function (dn
     d <- cal@data$Fiber.um # um
     d <- d / 10 ^ 6 # m
     coll.area <- pi * ((d / 2) ^ 2) # collection area [m2]
+    
     rad <- hyperSpec::apply(rad, 1, function(x)
       x / coll.area)
     rad@label$spc <-

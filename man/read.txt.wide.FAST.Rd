@@ -15,7 +15,7 @@ read.txt.wide.FAST(file, type = "reflectance", metadata = NULL,
 \item{data}{Path to extra data, must have same number of rows as number of spectra}
 }
 \value{
-A \pckg{hyperSpec} object
+A \pkg{hyperSpec} object
 }
 \description{
 Parse FAST wide table ground-based spectrometry files

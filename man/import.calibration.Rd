@@ -4,7 +4,8 @@
 \alias{import.calibration}
 \title{Import an instrument or reference panel's calibration data}
 \usage{
-import.calibration(files = "*.IrradCal", type = "uJ/count", label = NULL)
+import.calibration(files = "*.IrradCal", type = "uJ/count", label = NULL,
+  theta_v = 0)
 }
 \arguments{
 \item{files}{A specific file path or list of file paths. Default is select all text files in working directory \code{"*.IrradCal"}}
