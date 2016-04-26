@@ -23,7 +23,7 @@ rad.corr(dn, type = c("norm.DN", "radiant.energy", "spectral.flux",
 \item{instrument.metadata}{A named list with instrument metadata. See details.}
 }
 \value{
-A hyperSpec object including a matrix of radiometrically corrected spectra, metadata extracted from the spectra headers and file information
+A hyperSpec object including a matrix of radiometrically corrected spectra, metadata extracted from the spectra headers and file information.
 }
 \description{
 Convert instrument values, called digital number (DN) counts, to radiometric units using instrument specific metadata and calibration values (instrument response functions).
@@ -33,7 +33,7 @@ Radiometry terminology and units from \url{https://en.wikipedia.org/wiki/Templat
 
 Various unit conversions can be applied: Options include normalised DN [counts/s nm], radiant energy [J], spectral flux [W/nm], spectral intensity [W/sr nm], spectral radiance [W/sr m2 nm], spectral irradiance [W/m2 nm] and spectral irradiance of a reference panel relative to a 'lambertian' surface with a reflectance factor of 1 throughout the wavelength range of interest [W/m2 nm].
 
-These only make sense if the 'measurement geometry', 'integration time' [s] of a measurement, 'surface area of the instrument light apature' [m], and 'instrument-specific response function' in radiant energy (e.g., J/count) or other units is known and supplied to the function.
+These only make sense if the 'measurement geometry', 'integration time' [s] of a measurement, 'surface area of the instrument light apature' [m], and 'instrument-specific response function' in radiant energy (e.g., J/count or other units; FIXME: are there options for specifying other units?) is known and supplied to the function.
 
 Reference panel-specific reflectance over the wavelngth range of the measurement to be converted must be supplied to for reference panel values.
 }

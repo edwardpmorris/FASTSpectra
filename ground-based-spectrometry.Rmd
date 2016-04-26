@@ -1,0 +1,189 @@
+---
+title: "Ground-based spectrometry calculations for the Ocean Optics USB2000"
+author: "Edward P. Morris, UCA"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ground-based spectrometry calculations for the Ocean Optics USB2000}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This is an example of the data processing of ground-based Ocean Optics USB2000 (OO-USB2000) spectroradiometer measurements.
+
+Calculations have been documented in an R package to improve reproducibility.
+
+Fist we need to load the R package, as it is not on CRAN it needs to be downloaded from GitHub, this can be done directly with the package `devtools`.
+
+```{r load_package}
+#install.packages("devtools")
+
+#library(devtools)
+
+#install_github("edwardpmorris/FASTSpectra")
+
+library(FASTSpectra)
+```
+
+Details about each of the functions are now available via R help, for example by typing `help("FASTspectra")` in the console. `FASTSpectra` essentially uses `hyperSpec` as a framework for parsing, calibrating and other performing other operations on spectral data. 
+
+
+## A working example
+
+A number of ground-based, paired 'sample' and 'reference' spectra of different ground types (concrete path, green-lawn and brown-lawn) were collected during an instrument inter-comparison conducted at Field Spectrometry Facility (FSF), Edinburugh.
+
+The spectra collected with the OO-USB2000 are installed with the package, to use them we need to set the file path.
+
+```{r set_file_path}
+file.path <- system.file("extdata", package = "FASTSpectra")
+```
+
+Then we can parse the spectra into `hyperSpec` object using the function specific for reading OO text files.
+
+```{r parse_files, message=FALSE}
+dn <- FASTSpectra::read.txt.OceanOptics(files=paste0(file.path,"/*.txt"))
+```
+
+Details about the `hyperSpec` object can be accessed with by typing the object name in the console, `dn`. If you do this you will see there are 44 spectra with a wavelength range between 339.47 to 1028.84 nm and 2048 data points per spectra. Metadata associated with each spectra is also included as a dataframe with 15 columns, including information such as the filename, integration-time and timestamp of the measurement.
+
+We can also access all of the `hyperSpec` functions, especially designed for working with spectral data, for example plotting.
+
+```{r plot_dn, message=FALSE}
+library(hyperSpec)
+
+hyperSpec::plotspc(dn)
+```
+
+Looking at the plot we can see a mix of spectra with high and low values in the mid wavelengths (~550 nm), that is because the 'sample' (S) and 'reference' (R) measurements are all in one file.
+
+Which is which is defined in a 'field log', a `.csv` file with columns id, S, and R, we can assign a column in the metadata using the `FASTSpectra::assign.type` function:
+
+```{r}
+# assign measurement id and type using fieldlog file
+logfile <- paste0(file.path,"/fieldlog.csv")
+
+dn <- FASTSpectra::assign.type(dn, logfile=logfile)
+```
+
+Now if we check the metadata (type `dn` in console) we will see 2 new columns, type and id.
+These can be used to split the `hyperSpec` object into sample and reference spectra.
+
+```{r split_dn}
+# split into sample and reference spectra
+dn <- hyperSpec::split(x=dn, f=dn@data$type)
+```
+
+### Radiometric calibration
+
+Spectra, as instrument values, called digital number (DN) counts, require conversion to [radiometric units](https://en.wikipedia.org/wiki/Template:SI_radiometry_units) using instrument specific metadata and calibration values (instrument response functions).
+For this we use the `FASTSpectra::rad.cor` function, which allows the calculation of normalised DN, radiant energy, spectral flux, spectral intensity, spectral radiance and spectral irradiance. 
+
+These only make sense if the 'measurement geometry', 'integration time' [s] of a measurement, 'surface area of the instrument light apature' [m], and 'instrument-specific response function' in radiant energy (e.g., J/count or other units) is known and supplied to the function.
+
+Luckily, with help from FSF with have all of these, and can go ahead and calculate the spectral irradiance [W / m2 nm] of the sample spectra.
+
+```{r calc_irrad_sample}
+# set path of instrument-specific response function
+cal.rad <- paste0(file.path,"/*.IrradCal")
+
+# convert [DN/nm] to [W / m2 nm]
+sam <- rad.corr(dn$SAMP,
+                type="spectral.irradiance",
+                cal.DN2RadiantEnergy = cal.rad
+                )
+
+```
+
+### Reference panel
+
+We can also do the same for the reference measurements, however for these we also need to include the reference panel calibration i.e., the reflectance of the reference panel relative to a 'lambertian' surface with a reflectance factor of 1 throughout the wavelength range of interest.
+
+```{r calc_irrad_ref}
+# convert [DN/nm] to [W / m2 nm] relative to lambertian reference panel 
+cal.ref <- paste0(file.path,"/*.ReflCal")
+
+ref <- rad.corr(dn$REF,
+                type="spectral.irradiance",
+                is.REF=TRUE,
+                cal.DN2RadiantEnergy = cal.rad,
+                cal.RRefPanel = cal.ref
+                )
+```
+
+We can no plot each set of spectra and observe that indeed the reference measurements are generally much higher than the samples.
+
+```{r plot_irrad}
+
+plot(sam, wl.range=380:850)
+
+plot(ref, wl.range=380:850)
+```
+
+### Reflectance
+
+Now that our spectra are calibrated we can go ahead and calculate the 'absolute' reflectance for each specta pair (defined by the logfile).
+
+```{r calc_reflectance}
+# calculate reflectance as 'irradiance/irradiance'
+SHR <- calc.reflectance(reference=ref, sample=sam, logfile=logfile)
+
+# plot absolute reflectance
+plot(SHR, wl.range=380:850)
+
+```
+
+In this plot of absolute or 'hemispherical-conical' reflectance the groupings of the spectra from measurements at the same positions on the 3 ground types becomes a bit clearer.
+Around 7 spectra were collected in a 'round-robin' fashion, i.e., one ground type and then the next, in variable lighting conditions (it was summer in Scotland).
+
+To get a feeling for the variability in the measured reflectance spectra we can group the spectra by ground type and calculate quartiles.
+
+```{r calc_quartiles}
+
+# calculate quartiles by ground type
+SHR.quant <-
+  aggregate(
+  SHR,
+  SHR@data$id,
+  quantile,
+  probs = c(0.05, 0.16, 0.5, 0.84, 0.95),
+  na.rm = T
+  )
+  
+plot(SHR.quant
+  , col = matlab.dark.palette(length(unique(
+  SHR.quant@data$.aggregate
+  )))
+  , fill=SHR.quant@data$.aggregate
+  , wl.range = 380:850)
+  
+```
+
+## Radiometric calculations in detail
+
+### Normalised Digital Number counts (*DN*~norm~) [counts s^-1^ nm^-1^]
+Calculations begin with conversion of instrument counts spectra (*DN*~$\lambda$~) to normalised DN (*DN*~norm,$\lambda$~, counts s^-1^ nm^-1^) using the 'integration time' (*t*, s) i.e., the time period over which the instrument records light through the measuring apature, and the 'wavelength spread' i.e., the width of each band (d~$\lambda$~, nm).
+
+$$DN_{\mathrm{norm, \lambda}} = \frac{DN_{\lambda}}{t \times d_{\lambda}}$$
+
+These only make sense if the 'measurement geometry', 'integration time' [s] of a measurement, 'surface area of the instrument light apature' [m], and 'instrument-specific response function' in radiant energy (e.g., J/count or other units) is known and supplied to the function.
+
+
+### Radiant energy (Q) [J] 
+If a 'instrument-specific response function' (*IRF*~$\lambda$~, J s nm count^-1^) is available, radiant energy is calculated as:
+
+$$Q_{\mathrm{e}} = {DN_{\mathrm{norm, \lambda}}}\times{IRF_{\lambda}}$$
+
+### Spectral flux (Φ~e,λ~) [W / nm]
+If a 'instrument-specific response function' (*IRF*~$\lambda$~, J count^-1^) is available, spectral flux is calculated as:
+
+$$\Phi_{\mathrm{e, \lambda}} = {DN_{\mathrm{norm, \lambda}}}\times{IRF_{\lambda}}$$
+
+### Spectral intensity (I~e,Ω,λ~) [W sr^-1^ nm^-1^]
+Using the 'solid angle of the collector' in steradians (Ω, sr) spectral intensity can be calculated as:
+
+$$I_{\mathrm{e},\Omega, \lambda} = \frac{ \Phi_\mathrm{e, \lambda}}{ \Omega}$$
+
+### Spectral radiance [ W / sr m2 nm]
+Using the 'projected area of the collector' (*A*cos$\theta$), 
+
+$$L_{\mathrm{e},\Omega, \lambda} = \frac{ I_{\mathrm{e},\Omega, \lambda}}{ A \cos \theta}$$
