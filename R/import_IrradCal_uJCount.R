@@ -2,14 +2,14 @@
 #' 
 #' Given the path to a specifically formatted IrradCal file in units of uJ / 
 #' count, the function parses the file, tidies and calculates metadata, converts
-#' to J s nm / count and returns a \pkg{hyperSpec} object
+#' to J / count and returns a \pkg{hyperSpec} object
 #' 
 #' @param file_path File path to a OO 'IrradCal' instrument-specific response function
 #' @param theta_v The viewing geometry of measurements (θv, °),
 #' expressed as an angle from the nadir (0°) viewing zenith. 
 #'
 #' @return A \pkg{hyperSpec} object with the instrument-specific response 
-#' function in units J s nm / count and metadata for further radiometric
+#' function in units J / count and metadata for further radiometric
 #' conversions
 #' @export
 #'
@@ -46,7 +46,7 @@ import_IrradCal_uJCount <- function(file_path, theta_v=0){
   
   # Make labels
   label = list (spc = expression(paste(
-    C [Q [e]] , " (" , J, ~s, ~nm, ~ count ^ -1, ")"
+    C [Q [e]] , " (" , J, ~ count ^ -1, ")"
   )))
   
   # Make new hyperSpec object, assigning information
@@ -66,7 +66,7 @@ import_IrradCal_uJCount <- function(file_path, theta_v=0){
   names(out@data) <- nam
   
   # Update units
-  out@data$Units[1] <- c("J s nm / count")
+  out@data$Units[1] <- c("J / count")
   
   # Calculate metadata for radiometric conversions --------------------------    
   
@@ -101,11 +101,12 @@ import_IrradCal_uJCount <- function(file_path, theta_v=0){
   irf <- out@data$spc[1,] / 10^6
 
   # Convert from J / count to J s nm / count
-  rad <- normalise_irf(irf, int_time, wavelengths)
+  # NOT NEEDED !!
+  #rad <- normalise_irf(irf, int_time, wavelengths)
 
   # Add to hyperspec object
-  out@data$spc[1,] <- matrix(rad, nrow = 1, ncol = length(rad))
-  out@data$Units[1] <- c("J s nm / count")
+  out@data$spc[1,] <- matrix(irf, nrow = 1, ncol = length(rad))
+  out@data$Units[1] <- c("J / count")
   
   return(out)
 }
