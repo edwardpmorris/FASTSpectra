@@ -16,9 +16,10 @@ solid_angle <- function(theta_fov){
   # divide by 2 for half-fov
   theta_fov <- theta_fov/2
   # convert to radians
-  theta_fov <- (theta_fov) * (pi / 180)
+  #theta_fov <- (theta_fov) * (pi / 180)
   # calculate 'solid angle' in steradians
   return(
-    pi * (sin(theta_fov))^2
+    #pi * (sin(theta_fov))^2
+    2 * pi * (1 - cos(theta_fov))
   )
 }

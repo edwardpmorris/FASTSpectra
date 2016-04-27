@@ -18,5 +18,5 @@
 #' proj_collection_area(400, unit_in='um', theta_v=0)
 proj_collection_area <- function(diameter, unit_in='um', theta_v=0){
   area <- collection_area(diameter, unit_in)
-  return(area * cos(theta_v))
+  return(area * cos(theta_v * (pi/180)))
 }

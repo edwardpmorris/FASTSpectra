@@ -1,15 +1,16 @@
 #' Import an OO 'IrradCal' instrument-specific response function
 #' 
-#' Given the path to a specifically formatted IrradCal file in units of uJ /
-#' count, parse the file extracts, tidies and calculates metadata, converts to
-#' J and returns a \pkg{hyperSpec} object
-#'
+#' Given the path to a specifically formatted IrradCal file in units of uJ / 
+#' count, the function parses the file, tidies and calculates metadata, converts
+#' to J s nm / count and returns a \pkg{hyperSpec} object
+#' 
 #' @param file_path File path to a OO 'IrradCal' instrument-specific response function
 #' @param theta_v The viewing geometry of measurements (θv, °),
 #' expressed as an angle from the nadir (0°) viewing zenith. 
 #'
 #' @return A \pkg{hyperSpec} object with the instrument-specific response 
-#' function in units J / count and metadata for further radiometric conversions
+#' function in units J s nm / count and metadata for further radiometric
+#' conversions
 #' @export
 #'
 #' @examples
@@ -35,8 +36,8 @@ import_IrradCal_uJCount <- function(file_path, theta_v=0){
   # Preallocate the spectra matrix
   spc <- matrix (ncol = nrow (buffer), nrow = 1)
   
-  # Add spectral data, convert to J
-  spc [1,] <- buffer[, 2] / 10^6
+  # Add spectral data
+  spc [1,] <- buffer[, 2]
   
   # Add the file name to the metadata
   data <- data.frame (file = as.character(basename(file_path)),
@@ -45,7 +46,7 @@ import_IrradCal_uJCount <- function(file_path, theta_v=0){
   
   # Make labels
   label = list (spc = expression(paste(
-    C [I [e]] , " (" , J, ~ count ^ -1, ")"
+    C [Q [e]] , " (" , J, ~s, ~nm, ~ count ^ -1, ")"
   )))
   
   # Make new hyperSpec object, assigning information
@@ -65,7 +66,7 @@ import_IrradCal_uJCount <- function(file_path, theta_v=0){
   names(out@data) <- nam
   
   # Update units
-  out@data$Units[1] <- c("J / count")
+  out@data$Units[1] <- c("J s nm / count")
   
   # Calculate metadata for radiometric conversions --------------------------    
   
@@ -89,22 +90,22 @@ import_IrradCal_uJCount <- function(file_path, theta_v=0){
   out@data$Proj.Collection.Area.m2 <- 
     proj_collection_area(out@data$Fiber.um, unit_in='um', theta_v=theta_v)
   
-  # # Calculate normalised spectral DN ----------------------------------------
-  # 
-  # # Gather components
-  # irf <- out@data$spc[1,] # uJ / count
-  # int_time <- out@data$Integration.Time.sec # s
-  # wavelengths <- out@wavelength # nm 
-  # 
-  # # Convert irf from uJ to J / count
-  # irf <- out@data$spc[1,] / 10^6
-  # 
-  # # Convert from J / count to J s nm / count 
-  # rad <- normalise_irf(irf, int_time, wavelengths)
-  # 
-  # # Add to hyperspec object
-  # out@data$spc[2,] <- matrix(rad, nrow = 1, ncol = length(rad))
-  # out@data$Units[2] <- c("J s nm / count")
+  # Calculate normalised spectral DN ----------------------------------------
+
+  # Gather components
+  irf <- out@data$spc[1,] # uJ / count
+  int_time <- out@data$Integration.Time.sec # s
+  wavelengths <- out@wavelength # nm
+
+  # Convert irf from uJ to J / count
+  irf <- out@data$spc[1,] / 10^6
+
+  # Convert from J / count to J s nm / count
+  rad <- normalise_irf(irf, int_time, wavelengths)
+
+  # Add to hyperspec object
+  out@data$spc[1,] <- matrix(rad, nrow = 1, ncol = length(rad))
+  out@data$Units[1] <- c("J s nm / count")
   
   return(out)
 }

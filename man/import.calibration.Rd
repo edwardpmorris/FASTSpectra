@@ -8,24 +8,35 @@ import.calibration(files = "*.IrradCal", type = "uJ/count", label = NULL,
   theta_v = 0)
 }
 \arguments{
-\item{files}{A specific file path or list of file paths. Default is select all text files in working directory \code{"*.IrradCal"}}
+\item{files}{A specific file path or list of file paths. Default is select all
+text files in working directory \code{"*.IrradCal"}}
 
 \item{type}{One of \code{c("uJ/count", "R_ref_panel")}.}
 
-\item{label}{A list of form \code{list(parameter = expression(parameter))}. Default is to label the parameter as "C_Q_e_ (uJ count^-1^)"}
+\item{label}{A list of form \code{list(parameter = expression(parameter))}.
+Default is to label the parameter as "C_Q_e_ (uJ count^-1^)"}
 }
 \value{
-A \pkg{hyperSpec} object including a matrix of spectra, metadata extracted from the spectra headers and file information
+A \pkg{hyperSpec} object including a matrix of spectra, metadata
+ extracted from the spectra headers and file information
 }
 \description{
-Given a path to folder that contains a file with instrument or reference panel specific calibration data this function imports the data into a \pkg{hyperSpec} object ready for use in radiometric correction
+Given a path to folder that contains a file with instrument or reference panel
+specific calibration data this function imports the data into a
+\pkg{hyperSpec} object ready for use in radiometric correction
 }
 \details{
 At present only 2 formats are accepted:
 
-An Ocean Optics format calibration file (`type="uJ/count"`) e.g.,  '*.IrradCal'. This has a 7 line header (YAML) and tab-delimited columns of 'wavelength' and  '[uJoule/count]'.
+An Ocean Optics format calibration file (`type="uJ/count"`) e.g., 
+'*.IrradCal'. This has a 7 line header (YAML) and tab-delimited columns of
+'wavelength' and  '[uJoule/count]'.
 
-A reference panel reflectance calibration (`type="RefCal"`), i.e., the reflectance of the reference panel relative to a 'lambertian' surface with a reflectance factor of 1 throughout the wavelength range of interest. This has a heaer of 4 lines (YAML) and 2 tab delimited columns, 'wavelength' and 'R_lambda'.
+A reference panel reflectance calibration (`type="RefCal"`), i.e., the
+reflectance of the reference panel relative to a 'lambertian' surface with a
+reflectance factor of 1 throughout the wavelength range of interest. This has
+a heaer of 4 lines (YAML) and 2 tab delimited columns, 'wavelength' and
+'R_lambda'.
 }
 \examples{
 # set path to data files
