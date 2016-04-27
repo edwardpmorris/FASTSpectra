@@ -105,7 +105,7 @@ import_IrradCal_uJCount <- function(file_path, theta_v=0){
   #rad <- normalise_irf(irf, int_time, wavelengths)
 
   # Add to hyperspec object
-  out@data$spc[1,] <- matrix(irf, nrow = 1, ncol = length(rad))
+  out@data$spc[1,] <- matrix(irf, nrow = 1, ncol = length(irf))
   out@data$Units[1] <- c("J / count")
   
   return(out)

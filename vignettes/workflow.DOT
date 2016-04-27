@@ -1,0 +1,41 @@
+digraph LR {
+  splines=polyline;
+  
+	subgraph _0 {
+		node [style=filled, color=lightblue];
+		integrationTimeSeconds;
+		viewingAngle -> projectedCollectionArea;
+		label = "Measurement metadata - measured";
+	}
+	
+	subgraph _1 {
+		node [style=filled, color=lightgreen];
+		wavelengths -> wavelengthSpread;
+		diameterFibre -> collectionArea;
+		"IRF-J/Count";
+		numericalAperture -> fullAngle -> solidAngle;
+		"referencePanel-Rλ"
+		label = "Instrument metadata - measured";
+		color=blue
+	}
+	
+	subgraph _2 {
+		node [style=filled];
+		DN -> normDN -> spectralFlux -> spectralIntensity;
+    spectralIntensity -> spectralRadiance;
+    spectralFlux -> spectralIrradiance;
+    spectralIrradiance -> spectralHemisphericalConicalReflectance
+    spectralRadiance -> spectralHemisphericalConicalReflectance
+		label = "Measurement";
+		color=green
+	}
+	
+	integrationTimeSeconds -> normDN;
+	wavelengthSpread -> normDN;
+	"IRF-J/Count" -> spectralFlux;
+	solidAngle -> spectralIntensity;
+	collectionArea -> spectralIrradiance;
+	projectedCollectionArea -> spectralRadiance;
+	collectionArea -> projectedCollectionArea;
+	"referencePanel-Rλ" -> normDN
+}

@@ -86,12 +86,17 @@ Luckily, with help from FSF with have all of these, and can go ahead and calcula
 # set path of instrument-specific response function
 cal.rad <- paste0(file.path,"/*.IrradCal")
 
+cal <- import.calibration(cal.rad)
+
+plot(cal)
+
 # convert [DN/nm] to [W / m2 nm]
 sam <- rad.corr(dn$SAMP,
-                type="spectral.radiance",
+                type="spectral.irradiance",
                 cal.DN2RadiantEnergy = cal.rad
                 )
 
+plot(sam)
 ```
 
 ### Reference panel
@@ -114,9 +119,9 @@ We can no plot each set of spectra and observe that indeed the reference measure
 
 ```{r plot_irrad}
 
-plot(sam, wl.range=380:850)
+plot(sam, wl.range=380:950)
 
-plot(ref, wl.range=380:850)
+plot(ref, wl.range=380:950)
 ```
 
 ### Reflectance
@@ -128,7 +133,7 @@ Now that our spectra are calibrated we can go ahead and calculate the 'absolute'
 SHR <- calc.reflectance(reference=ref, sample=sam, logfile=logfile)
 
 # plot absolute reflectance
-plot(SHR, wl.range=380:850)
+plot(SHR, wl.range=380:950)
 
 ```
 
@@ -154,12 +159,20 @@ plot(SHR.quant
   SHR.quant@data$.aggregate
   )))
   , fill=SHR.quant@data$.aggregate
-  , wl.range = 380:850)
+  , wl.range = 380:950)
   
 ```
 
 
 ## Radiometric calculations in detail
+
+A diagram representing the workflow and the components required to derive radiometric quantities from ground-based spectrometry measurements (using a OO-USB2000) is shown below. Green nodes represent 'constant' metadata for the instrument and reference panel i.e, this information is in frequently updated, for example after a new calibration or change in the system. Blue nodes represent metadata for a specific measurement, this information may change for each measurement. Grey nodes represent spectral 'units', with Digital Number counts (DN) being the usual starting point for radiometric conversion.
+
+```{r workflow_diagram}
+require(DiagrammeR)
+grViz(paste0(file.path,"/workflow.DOT"))
+```
+
 
 ### Instrument-specific properties
 Conversion of instrument Digital Number counts to radiometric units requires instrument-specific metadata including;

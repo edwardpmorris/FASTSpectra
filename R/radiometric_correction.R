@@ -135,7 +135,7 @@ rad.corr <- function (dn
   }
   
   # Convert to radiant energy (Q) [J] ------------------------------------------
-  # as (count / s nm) * (J s nm / count)
+  # as ((count / s nm) * (J / count))
   radiant.energy <- function (normDN, cal.DN2RadiantEnergy) {
     cal <- make.cal.approx(cal.DN2RadiantEnergy) # J s nm / count
     rad <- hyperSpec::apply(
@@ -186,9 +186,16 @@ rad.corr <- function (dn
   # Convert to spectral radiance [ W / sr m2 nm] ----------------------------
   spectral.radiance <-
     function (normDN, cal.DN2RadiantEnergy, theta_v = 0) {
-      rad <- spectral.intensity(normDN, cal.DN2RadiantEnergy) # W / sr nm
+      # import calibration
       cal <- import.cal.rad(cal.DN2RadiantEnergy)
-      coll.area <- get.proj.area(cal, theta_v) # m2
+      # interpolate calibration
+      cal.approx <- make.cal.approx(cal.DN2RadiantEnergy) # J s nm / count
+      # get projected collection area
+      coll.area <- get.area(cal) # m2
+      # multiply by calibration for J / s nm (W /nm)
+      rad <- hyperSpec::apply(nDN, 1, function(x)
+        x * cal.approx(nDN@wavelength))
+      # divide by collection area for J / s m2 nm (W / m2 / nm)
       rad <- hyperSpec::apply(rad, 1, function(x)
         x / coll.area)
       rad@label$spc <-
@@ -203,10 +210,17 @@ rad.corr <- function (dn
     }
   
   # Convert to spectral irradiance [ W / m2 nm] ----------------------------
-  spectral.irradiance <- function (normDN, cal.DN2RadiantEnergy) {
-    rad <- spectral.flux(normDN, cal.DN2RadiantEnergy)
+  spectral.irradiance <- function (nDN, cal.DN2RadiantEnergy) {
+    # import calibration
     cal <- import.cal.rad(cal.DN2RadiantEnergy)
+    # interpolate calibration
+    cal.approx <- make.cal.approx(cal.DN2RadiantEnergy) # J s nm / count
+    # get collection area
     coll.area <- get.area(cal) # m2
+    # multiply by calibration for J / s nm (W /nm)
+    rad <- hyperSpec::apply(nDN, 1, function(x)
+      x * cal.approx(nDN@wavelength))
+    # divide by collection area for J / s m2 nm (W / m2 / nm)
     rad <- hyperSpec::apply(rad, 1, function(x)
       x / coll.area)
     rad@label$spc <-
@@ -220,17 +234,17 @@ rad.corr <- function (dn
   
   # Correct for reference panel reflectance  -----------------------------------
   # divid normalised DN by the reflectance of the reference panel
-  corr.ref.panel <- function (normDN, cal.RRefPanel) {
+  corr.ref.panel <- function (nDN, cal.RRefPanel) {
     cal.RRefPanel <-
       import.calibration(type = "R_ref_panel", files = cal.RRefPanel)
     cal.RRP <-
       approxfun(cal.RRefPanel@wavelength, cal.RRefPanel@data$spc[1, ])
     rad <-
       hyperSpec::apply(
-        normDN,
+        nDN,
         MARGIN = 1,
         FUN = function(x)
-          x / cal.RRP(normDN@wavelength)
+          x / cal.RRP(nDN@wavelength)
       )
     return(rad)
   }
@@ -239,28 +253,28 @@ rad.corr <- function (dn
   
   # Calculate normalised DN
   # counts divided by integration time and band half widths
-  normDN <- normDN(dn) # count/ s nm
+  nDN <- normDN(dn) # count/ s nm
   
   # Correct for reference panel
   # only if option set to T
   if (is.REF == T) {
-    normDN <- corr.ref.panel(normDN, cal.RRefPanel)}
+    nDN <- corr.ref.panel(nDN, cal.RRefPanel)}
   
   # Return desired units, default normalised DN
-  rad <- normDN
+  rad <- nDN
   
   switch (
     type,
     radiant.energy = rad <-
-      radiant.energy(normDN, cal.DN2RadiantEnergy),
+      radiant.energy(nDN, cal.DN2RadiantEnergy),
     spectral.flux = rad <-
-      spectral.flux(normDN, cal.DN2RadiantEnergy),
+      spectral.flux(nDN, cal.DN2RadiantEnergy),
     spectral.intensity = rad <-
-      spectral.intensity(normDN, cal.DN2RadiantEnergy),
+      spectral.intensity(nDN, cal.DN2RadiantEnergy),
     spectral.radiance = rad <-
-      spectral.radiance(normDN, cal.DN2RadiantEnergy),
+      spectral.radiance(nDN, cal.DN2RadiantEnergy),
     spectral.irradiance = rad <-
-      spectral.irradiance(normDN, cal.DN2RadiantEnergy)
+      spectral.irradiance(nDN, cal.DN2RadiantEnergy)
   )
   return(rad)
 }

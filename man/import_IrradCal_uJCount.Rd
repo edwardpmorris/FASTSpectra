@@ -14,13 +14,13 @@ expressed as an angle from the nadir (0°) viewing zenith.}
 }
 \value{
 A \pkg{hyperSpec} object with the instrument-specific response 
-function in units J s nm / count and metadata for further radiometric
+function in units J / count and metadata for further radiometric
 conversions
 }
 \description{
 Given the path to a specifically formatted IrradCal file in units of uJ / 
 count, the function parses the file, tidies and calculates metadata, converts
-to J s nm / count and returns a \pkg{hyperSpec} object
+to J / count and returns a \pkg{hyperSpec} object
 }
 \examples{
 sys_path <- system.file("extdata", package = "FASTSpectra")
