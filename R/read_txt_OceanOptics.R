@@ -88,12 +88,33 @@ read.txt.OceanOptics <- function (
        )
   
   # format (meta)data
-  
-  
   parse.timestamp <- function(timestamp){
     tims <- stringr::str_split_fixed(timestamp, " ", n=6)
-    tms<- data.frame(tz = tims[,c(5)], timestamp=apply(tims[,c(6,2,3,4)], 1, paste, collapse=" "), stringsAsFactors = F)
-    out <- lubridate::parse_date_time(tms[,"timestamp"],"%y %b %d %H:%M:%S", locale ="en_GB.utf8", tz =unique(tms[,"tz"]))
+    tms <- data.frame(tz = tims[,c(5)]
+                      , timestamp=apply(tims[,c(6,2,3,4)],1,paste, collapse=" ")
+                      , stringsAsFactors = F)
+    # deal with 'summer time' changes
+    tz <- unique(tms[,"tz"])
+    if(length(tz)>1){
+      tms1 <- tms[which(tms$tz==tz[1]),]
+      tms2 <- tms[which(tms$tz==tz[2]),]
+      out1 <- lubridate::parse_date_time(tms1[,"timestamp"]
+                                        ,"%y %b %d %H:%M:%S"
+                                        , locale ="en_GB.utf8"
+                                        , tz =unique(tms1[,"tz"])
+                                        )
+      out2 <- lubridate::parse_date_time(tms2[,"timestamp"]
+                                         ,"%y %b %d %H:%M:%S"
+                                         , locale ="en_GB.utf8"
+                                         , tz =unique(tms2[,"tz"])
+      )
+      out <- c(out1, out2)
+    } else {
+      out <- lubridate::parse_date_time(tms[,"timestamp"],"%y %b %d %H:%M:%S"
+                                        , locale ="en_GB.utf8"
+                                        , tz =unique(tms[,"tz"])
+      )  
+    }
     return(out)
   }
   out@data$timestamp <- parse.timestamp(out@data$Date)
