@@ -92,7 +92,7 @@ plot(cal)
 
 # convert [DN/nm] to [W / m2 nm]
 sam <- rad.corr(dn$SAMP,
-                type="spectral.irradiance",
+                type="spectral.radiance",
                 cal.DN2RadiantEnergy = cal.rad
                 )
 
@@ -166,26 +166,39 @@ plot(SHR.quant
 
 ## Radiometric calculations in detail
 
-A diagram representing the workflow and the components required to derive radiometric quantities from ground-based spectrometry measurements (using a OO-USB2000) is shown below. Green nodes represent 'constant' metadata for the instrument and reference panel i.e, this information is in frequently updated, for example after a new calibration or change in the system. Blue nodes represent metadata for a specific measurement, this information may change for each measurement. Grey nodes represent spectral 'units', with Digital Number counts (DN) being the usual starting point for radiometric conversion.
+A diagram representing the workflow and the components required to derive radiometric quantities from ground-based spectrometry measurements (using a OO-USB2000) is shown below.
 
-```{r workflow_diagram}
+```{r workflow_diagram, echo=FALSE, message=FALSE}
 require(DiagrammeR)
-grViz(paste0(file.path,"/workflow.DOT"))
+grViz("workflow.DOT", width = 600, height = 400)
 ```
+
+Green nodes represent 'constant' metadata about the instrument and reference panel, for example the 'instrument response function' and the diameter of the collection apature.
+Blue nodes represent metadata about a specific measurement that may potentially change from one spectra to the next. 
+
+Grey nodes represent spectral 'units', with Digital Number counts (DN) being instrument values and the usual starting point for radiometric conversion. Here it is assumed that corrections for non-linearity and dark signal are done previously (for example by the spectrometer software).
+
+Terminology and symbols for radiometric units and metadata follow ISO standards[REF] were possible; some extra terminology in use within the discipline are also included (Table 1).
+
+TABLE 1
+Name, Symbol, Unit, Description, Link
+
 
 
 ### Instrument-specific properties
-Conversion of instrument Digital Number counts to radiometric units requires instrument-specific metadata including;
+Conversion of instrument Digital Number counts to radiometric units requires instrument- and measurement-specific metadata including;
 
 + The 'integration time' (*t*, s) of a measurement i.e., the time period over which the instrument records light through the measuring apature.
 
-+ The 'diameter' (*d*, m) and 'full angle' or 'angular field of view' ($\theta$~fov~, °)  of the instrument light collection apature. For the OO-USB2000 these are often properties of the fibre optic that guides light into the detector array.
-
 + The viewing geometry of measurements ($\theta$~v~, °), expressed as an angle from the nadir (0°) viewing zenith. In general most ground-based spectrometry measurements aim for a $\theta$~v~ of 0°.  
+
++ The 'spectral sampling interval' ($\lambda$, nm) i.e., the wavelength scale.
+
++ The 'diameter' (*d*, m) and 'full angle' or 'angular field of view' ($\theta$~fov~, °)  of the instrument light collection apature. For the OO-USB2000 these are often properties of the fibre optic that guides light into the detector array. Full angle can be calculated from the 'numerical apature' of the optical system. 
 
 + The 'instrument-specific response function' or 'spectral response of each band' (*IRF*~$\lambda$~, J count^-1^). This may have different units, but must cover the full range of wavelengths of interest and should have the same spectral resolution as the instrument.
 
-+ The 'spectral sampling interval' ($\lambda$, nm) i.e., the wavelength scale.
++ For reflectance measurements using a reference panel, the spectral hemispherical reflectance of the panel, covering the full range of wavelengths of interest.
 
 From these properties the 'solid angle of the collector' in steradians (Ω, sr) is calculated as:
 
@@ -197,27 +210,16 @@ $$A = \pi \times \left(\frac{d}{2}\right)^2$$
 
 The projected area of the collection apature (*A*cos$\theta$, m^2^) as:
 
-$${A \cos \theta} = A \times \cos (\theta_{v})$$
+$${A \cos \theta} = A \times \cos (\theta_{v} \times \frac{\pi}{180})$$
 
 'Wavelength spread' or 'half-power bandwidths' (d~$\lambda$~, nm), i.e., the half-width of each band is calculated as:
 
 $$d_{\lambda} = \frac{\lambda_{i} - \lambda_{i+1}}{2}$$
 
-The normalised 'instrument-specific response function' (*IRF*~norm,$\lambda$~, J s nm count^-1^) is calculated as:
-
-$${IRF}_{\mathrm{norm, \lambda}} = \frac{t \times d_{\lambda}}{{IRF}_{\lambda}}$$
-
-where, *t* is the integration time of the calibration measurement.
-
 ### Normalised Digital Number counts (*DN*~norm~) [counts s^-1^ nm^-1^]
 Calculations begin with conversion of instrument counts spectra (*DN*~$\lambda$~) to normalised DN (*DN*~norm,$\lambda$~, counts s^-1^ nm^-1^) using the 'integration time' (*t*, s) i.e., the time period over which the instrument records light through the measuring apature, and the 'wavelength spread' i.e., the width of each band (d~$\lambda$~, nm).
 
 $${DN}_{\mathrm{norm, \lambda}} = \frac{{DN}_{\lambda}}{t \times d_{\lambda}}$$
-
-### Radiant energy (*Q*) [J] 
-Using the normalised instrument-specific response function (*IRF*~$norm,\lambda$~, J s nm count^-1^), radiant energy is calculated as:
-
-$$Q_{\mathrm{e}} = {{DN}_{\mathrm{norm, \lambda}}}\times{{IRF}_{norm, \lambda}}$$
 
 ### Spectral flux (*Φ*~e,λ~) [W / nm]
 Using the instrument-specific response function (*IRF*~$\lambda$~, J count^-1^), spectral flux is calculated as:
@@ -238,3 +240,32 @@ $$L_{\mathrm{e},\Omega, \lambda} = \frac{ I_{\mathrm{e},\Omega, \lambda}}{ A \co
 Using the surface area of the collection apature (*A*, m^2^), spectral irradiance is calculated as:
 
 $$E_\mathrm{e, \lambda} = \frac{\Phi_\mathrm{e, \lambda}}{A}$$
+
+### Spectral hemispherical reflectance (*R*~λ~) 
+Assuming both the spectral radiant flux reflected and recieved by the surface (Φ^r^~e,λ~ and Φ^i^~e,λ~) are not dependent on direction and are measured with an instrument that has the same collection area, hemispherical reflectance is defined as:
+
+$${R_{\lambda}} = \frac{\Phi_{\mathrm{e},\lambda}^{\mathrm{r}}}{\Phi_{\mathrm{e},\lambda}^{\mathrm{i}}}$$
+
+In practice this assumption is valid for the incident flux reflected from a reference panel or up and downward fluxes measured using a cosine collector and the same instrument.
+
+Often [spectral irradiance reflectance]((http://www.oceanopticsbook.info/view/overview_of_optical_oceanography/reflectances)[REF]) is more conveniently calculated as:
+
+$${R_{\lambda}} = \frac{E_{\mathrm{e},\lambda}^{\mathrm{r}}}{E_{\mathrm{e},\lambda}^{\mathrm{i}}}$$
+
+### Spectral directional reflectance (*R*~λ,Ω~)
+When assuming directionality in both upwelling and downwelling light, then spectral radiance reflected and recieved by the surface (L^r^~e,Ω,λ~ and L^i^~e,Ω,λ~) are used to calculate reflectance as:
+
+$$R_{\Omega,\lambda} = \frac{L_{\mathrm{e},\Omega,\lambda}^\mathrm{r}}{L_{\mathrm{e},\Omega,\lambda}^\mathrm{i}}$$
+
+### Spectral hemispherical conical reflectance (*R*^h^~Ω,λ~) [sr^-1^]
+
+In practice the optical geometry of most ground-based spectrometry measurements (and satelite sensors) is a mix between hemispherical and directional measures. Sensors usually have limited anglular field of view and incident radiatice is reflected equally in all directions by the lambertian refernce panel.
+
+Specifically, as defined for [remote-sensing reflectance](http://www.oceanopticsbook.info/view/overview_of_optical_oceanography/reflectances) [REF]; 
+
+> ...a measure of how much of the downwelling radiance that is incident on a surface in any direction is eventually returned through the surface into a small solid angle $\Delta \Omega$ centered on a particular direction $(\theta,\phi)$.
+
+Assuming the spectral radiance reflected by the target surface and recieved by the collector surface is directional (L^r^~e,Ω,λ~) and the incident radiant flux reflected by a reference panel or collected by a cosine sensor is hemispherical (E^i^~e,λ~), hemispherical concial reflectance is defined as:
+
+$${R_{\Omega,\lambda}^{h}} = \frac{L_{\mathrm{e},\lambda}^{\mathrm{r}}}{E_{\mathrm{e},\lambda}^{\mathrm{i}}}$$
+
