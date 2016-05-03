@@ -43,10 +43,14 @@
 #' # read txt.wide file
 #' # read.txt.wide.FAST <- function(paste0(file.path,"/HCRF.spc"), type="reflectance", metadata=paste0(file.path,"/HCRF-metadata.spc"))
 read.txt.wide.FAST <- function(file, type="reflectance", metadata=NULL, sep="\t"){
+  
   # specify spectra type
-  spc.label <- expression(R [ list(Omega, lambda) ] )
+  spc.label <- expression(R [ list(Omega, lambda) ] ^{h} )
   if(type=="irradiance"){
     spc.label <- expression(paste(italic(E [list(e, lambda)]), " (", "W ", ~ m ^ {-2}, ~ nm ^ {-1}, ")"))}
+  if(type=="radiance"){
+    spc.label <- expression(paste(italic(L [list(e, lambda)]), " (", "W ", ~ sr ^ {-1},~ m ^ {-2}, ~ nm ^ {-1}, ")"))}
+  
   # specify columns and wavelength
   cols <- list (id= "Sample ID", timestamp= "Date time"
                 , .wavelength = expression(lambda~(nm)), spc=spc.label)
