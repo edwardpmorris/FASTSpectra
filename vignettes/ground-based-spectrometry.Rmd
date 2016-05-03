@@ -2,11 +2,10 @@
 title: "Ground-based spectrometry calculations for the Ocean Optics USB2000"
 author: "Edward P. Morris, UCA"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Ground-based spectrometry calculations for the Ocean Optics USB2000}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+always_allow_html: yes
 ---
 
 This is an example of the data processing of ground-based Ocean Optics USB2000 (OO-USB2000) spectroradiometer measurements.
