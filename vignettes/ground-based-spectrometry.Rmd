@@ -1,9 +1,10 @@
 ---
 title: "Ground-based spectrometry calculations for the Ocean Optics USB2000"
 author: "Edward P. Morris, UCA"
-date: "`r Sys.Date()`"
-output: 
-  pdf_document: 
+date: '`r Sys.Date()`'
+output:
+  html_document: default
+  pdf_document:
     latex_engine: xelatex
 always_allow_html: yes
 ---
@@ -43,7 +44,7 @@ Then we can parse the spectra into `hyperSpec` object using the function specifi
 dn <- FASTSpectra::read.txt.OceanOptics(files=paste0(file.path,"/*.txt"))
 ```
 
-Details about the `hyperSpec` object can be accessed with by typing the object name in the console, `dn`. If you do this you will see there are 44 spectra with a wavelength range between 339.47 to 1028.84 nm and 2048 data points per spectra. Metadata associated with each spectra is also included as a dataframe with 15 columns, including information such as the filename, integration-time and timestamp of the measurement.
+Details about the `hyperSpec` object can be accessed by typing the object name in the console, `dn`. If you do this you will see there are 44 spectra with a wavelength range between 339.47 to 1028.84 nm and 2048 data points per spectra. Metadata associated with each spectra is also included as a dataframe with 15 columns, including information such as the filename, integration-time and timestamp of the measurement.
 
 We can also access all of the `hyperSpec` functions, especially designed for working with spectral data, for example plotting.
 
@@ -256,15 +257,15 @@ When assuming directionality in both upwelling and downwelling light, then spect
 
 $$R_{\Omega,\lambda} = \frac{L_{\mathrm{e},\Omega,\lambda}^\mathrm{r}}{L_{\mathrm{e},\Omega,\lambda}^\mathrm{i}}$$
 
-### Spectral hemispherical conical reflectance (*R*^h^~Ω,λ~) [sr^-1^]
+### Spectral directional hemispherical reflectance (*R*^h^~Ω,λ~) [sr^-1^]
 
-In practice the optical geometry of most ground-based spectrometry measurements (and satelite sensors) is a mix between hemispherical and directional measures. Sensors usually have limited anglular field of view and incident radiatice is reflected equally in all directions by the lambertian refernce panel.
+In practice the optical geometry of most ground-based spectrometry measurements (and satelite sensors) is a mix between hemispherical and directional measures. Sensors usually have limited anglular field of view and incident radiance is reflected equally in all directions by the lambertian reference panel.
 
 Specifically, as defined for [remote-sensing reflectance](http://www.oceanopticsbook.info/view/overview_of_optical_oceanography/reflectances) [REF]; 
 
 > ...a measure of how much of the downwelling radiance that is incident on a surface in any direction is eventually returned through the surface into a small solid angle $\Delta \Omega$ centered on a particular direction $(\theta,\phi)$.
 
-Assuming the spectral radiance reflected by the target surface and recieved by the collector surface is directional (L^r^~e,Ω,λ~) and the incident radiant flux reflected by a reference panel or collected by a cosine sensor is hemispherical (E^i^~e,λ~), hemispherical concial reflectance is defined as:
+Assuming the spectral radiance reflected by the target surface and recieved by the collector surface is directional (L^r^~e,Ω,λ~) and the incident radiant flux reflected by a reference panel or collected by a cosine sensor is hemispherical (E^i^~e,λ~), directional hemispherical reflectance is defined as:
 
 $${R_{\Omega,\lambda}^{h}} = \frac{L_{\mathrm{e},\lambda}^{\mathrm{r}}}{E_{\mathrm{e},\lambda}^{\mathrm{i}}}$$
 

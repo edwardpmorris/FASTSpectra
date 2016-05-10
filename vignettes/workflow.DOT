@@ -24,8 +24,8 @@ digraph LR {
 		DN -> normDN -> spectralFlux -> spectralIntensity;
     spectralIntensity -> spectralRadiance;
     spectralFlux -> spectralIrradiance;
-    spectralIrradiance -> spectralHemisphericalConicalReflectance
-    spectralRadiance -> spectralHemisphericalConicalReflectance
+    spectralIrradiance -> spectralDirectionalHemisphericalReflectance
+    spectralRadiance -> spectralDirectionalHemisphericalReflectance
 		label = "Measurement";
 		color=green
 	}

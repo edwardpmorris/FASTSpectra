@@ -11,10 +11,13 @@
 #' @export
 #'
 #' @examples
-#' @name QC_metadata
-NULL
+#' #QC_metadata(spc) 
+QC_metatdata <- function(spc){
+  chk_corr_elec_dark(spc)
+  chk_corr_non_lin(spc)
+}
 
-#' @rdname QC_metadata
+#' @describeIn QC_metatdata Check for electrical dark correction
 chk_corr_elec_dark <- function(spc){
   serial <- spc@data$Spectrometers
   dat <- spc@data$Correct.for.Electrical.Dark
@@ -26,7 +29,7 @@ chk_corr_elec_dark <- function(spc){
   }
 }
 
-#' @rdname QC_metadata
+#' @describeIn QC_metatdata Check for non-linearity correction
 chk_corr_non_lin <- function(spc){
   serial <- spc@data$Spectrometers
   dat <- spc@data$Correct.for.Detector.Non.linearity

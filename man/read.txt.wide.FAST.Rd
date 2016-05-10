@@ -4,8 +4,7 @@
 \alias{read.txt.wide.FAST}
 \title{Parse FAST wide table ground-based spectrometry files}
 \usage{
-read.txt.wide.FAST(file, type = "reflectance", metadata = NULL,
-  sep = "\\t")
+read.txt.wide.FAST(file, type = "reflectance", metadata = NULL, sep = ",")
 }
 \arguments{
 \item{file}{Path to the spectral data. Wide table format with columns [id, timestamp, spc] and wavelength as spc column names.}

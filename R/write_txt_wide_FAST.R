@@ -40,8 +40,16 @@
 #' # write to file
 #' # write.txt.wide.FAST(SHR, paste0(file.path,"/HCRF.spc"), paste0(file.path,"/HCRF-metadata.spc"))
 write.txt.wide.FAST <- function(spc, file, file.meta){
+  spc@data$plot_code <- spc@data$id # FAST specific
+  spc@data$timestamp.ISO8601 <- spc@data$timestamp # FAST specific
+  spc@data$metadata_code <- 
+    paste(spc@data$id, format(spc@data$timestamp, "%Y-%m-%d"), sep="_")
   spc@data$timestamp <- as.character(spc@data$timestamp)
-  write.txt.wide(spc, file = file, cols=c("id", "timestamp", "spc"), quote=T)
+  write.txt.wide(spc
+                 , file = file
+                 , cols=c("metadata_code", "timestamp.ISO8601", "plot_code",  "spc")
+                 , quote=T
+                 , sep = ",")
   spc@data$spc <- NULL
   write.csv(spc@data, file = file.meta, row.names = F, quote=T)
 }
