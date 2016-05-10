@@ -3,9 +3,11 @@ title: "Ground-based spectrometry calculations for the Ocean Optics USB2000"
 author: "Edward P. Morris, UCA"
 date: '`r Sys.Date()`'
 output:
-  html_document: default
+  word_document: 
+    fig_caption: yes
   pdf_document:
     latex_engine: xelatex
+  html_document: default
 always_allow_html: yes
 ---
 
@@ -168,10 +170,14 @@ plot(SHR.quant
 
 A diagram representing the workflow and the components required to derive radiometric quantities from ground-based spectrometry measurements (using a OO-USB2000) is shown below.
 
-```{r workflow_diagram, echo=FALSE, message=FALSE}
+```{r workflow_diagram, message=FALSE, warning=FALSE, include=FALSE}
 require(DiagrammeR)
-grViz("workflow.DOT", width = 600, height = 400)
+require(DiagrammeRsvg)
+svg <- export_svg(grViz("workflow.DOT", width = 600, height = 400))
+write(svg, "workflow.svg")
+system("inkscape -z -e workflow.png -w 600 -h 400 workflow.svg")
 ```
+![Schematic diagram of the typical workflow for processing ground-based spectrometry data.](workflow.png)
 
 Green nodes represent 'constant' metadata about the instrument and reference panel, for example the 'instrument response function' and the diameter of the collection apature.
 Blue nodes represent metadata about a specific measurement that may potentially change from one spectra to the next. 
