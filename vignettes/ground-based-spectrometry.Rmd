@@ -273,5 +273,5 @@ Specifically, as defined for [remote-sensing reflectance](http://www.oceanoptics
 
 Assuming the spectral radiance reflected by the target surface and recieved by the collector surface is directional (L^r^~e,Ω,λ~) and the incident radiant flux reflected by a reference panel or collected by a cosine sensor is hemispherical (E^i^~e,λ~), directional hemispherical reflectance is defined as:
 
-$${R_{\Omega,\lambda}^{h}} = \frac{L_{\mathrm{e},\lambda}^{\mathrm{r}}}{E_{\mathrm{e},\lambda}^{\mathrm{i}}}$$
+$${R_{\Omega,\lambda}^{\mathrm{h}}} = \frac{L_{\mathrm{e},\lambda}^{\mathrm{r}}}{E_{\mathrm{e},\lambda}^{\mathrm{i}}}$$
 
