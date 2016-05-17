@@ -16,7 +16,7 @@ hyperSpecToHsdar <- function(spc){
   spectra[mapply(is.infinite, spectra)] <- NA
   attrb <- spc@data
   attrb$spc <- NULL
-  id <- attrb$id
+  id <- attrb$plot_code
   lab.wl <- spc@label$.wavelength
   lab.spc <- spc@label$spc
   # return hsdar spectra library object
