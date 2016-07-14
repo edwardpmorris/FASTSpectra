@@ -3,6 +3,7 @@
 export(QC_metatdata)
 export(assign.type)
 export(calc.reflectance)
+export(calcSolarZenith)
 export(collection_area)
 export(getSeason)
 export(hyperSpecToHsdar)
